@@ -63,4 +63,8 @@ func main() {
 	fmt.Println(separators)
 	fmt.Println("Is 'function' a keyword?", isKeyword("function"))
 	fmt.Println("Is 'pineapple' a keyword?", isKeyword("pineapple"))
+	fmt.Println("Is '+' an operator?", isOperator("+"))
+	fmt.Println("Is '!' an operator?", isOperator("!"))
+	fmt.Println("Is '(' a separator?", isSeparator("("))
+	fmt.Println("Is '!' a separator?", isSeparator("!"))
 }
