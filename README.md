@@ -12,7 +12,7 @@ Assignment 1 - create a lexer
 
 ### Windows
 
-1. Download and install Go from https://go.dev/learn/
+1. Download and install Go from https://go.dev/dl/
 1. Clone the repository
 2. Edit code (the .go files) in [src\lexer](src/lexer)
 1. Run [src\run.bat](src/run.bat) or use the command `go run` to run the .go file.
