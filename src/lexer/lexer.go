@@ -2,6 +2,26 @@ package main
 
 import "fmt"
 
+type tokenType int
+
+const (
+	Identifier tokenType = iota
+	Keyword
+	Integer
+	Real
+	Operator
+	Separator
+)
+
+type record struct {
+	tokenType tokenType
+	lexeme    string
+}
+
+type stateMachine struct {
+	currentState int
+}
+
 var keywords = [...]string{
 	"function",
 	"if",
@@ -61,10 +81,10 @@ func main() {
 	fmt.Println(keywords)
 	fmt.Println(operators)
 	fmt.Println(separators)
-	fmt.Println("Is 'function' a keyword?", isKeyword("function"))
-	fmt.Println("Is 'pineapple' a keyword?", isKeyword("pineapple"))
-	fmt.Println("Is '+' an operator?", isOperator("+"))
-	fmt.Println("Is '!' an operator?", isOperator("!"))
-	fmt.Println("Is '(' a separator?", isSeparator("("))
-	fmt.Println("Is '!' a separator?", isSeparator("!"))
+	fmt.Println("Let the main lexing loop begin...")
+	const sourceCode = "111,222"
+	fmt.Println("Source code: " + sourceCode)
+	for _, char := range sourceCode {
+		fmt.Println("Character: " + string(char))
+	}
 }

@@ -21,4 +21,4 @@ Assignment 1 - create a lexer
 
 Learning Go: https://go.dev/tour/list
 
-Creating a lexer in Go: https://go.dev/talks/2011/lex.slide#1
+Lexical Scanning in Go: https://go.dev/talks/2011/lex.slide#1
