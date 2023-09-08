@@ -34,6 +34,11 @@ var keywords = []string{
 	"ret",
 	"put",
 	"get",
+	"bool",
+	"real",
+	"while",
+	"true",
+	"false",
 }
 var operators = []string{
 	"+",
@@ -43,6 +48,10 @@ var operators = []string{
 	"=",
 	">",
 	"<",
+	"==",
+	"!=",
+	"<=",
+	">=",
 }
 var separators = []string{
 	"(",
