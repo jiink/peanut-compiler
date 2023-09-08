@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"slices"
+)
 
 type tokenType int
 
@@ -22,7 +26,7 @@ type stateMachine struct {
 	currentState int
 }
 
-var keywords = [...]string{
+var keywords = []string{
 	"function",
 	"if",
 	"endif",
@@ -31,17 +35,21 @@ var keywords = [...]string{
 	"put",
 	"get",
 }
-var operators = [...]string{
+var operators = []string{
 	"+",
 	"-",
 	"*",
 	"/",
+	"=",
+	">",
+	"<",
 }
-var separators = [...]string{
+var separators = []string{
 	"(",
 	")",
 	"{",
 	"}",
+	".",
 	",",
 	";",
 }
@@ -75,16 +83,41 @@ func isSeparator(str string) bool {
 	return false
 }
 
+// Split source code based on whitespace, separators, and operators.
+// Return the pieces of strings.
+func splitSourceCode(sourceCode string, separators []string, operators []string) []string {
+	stuffThatNeedsToBeEscaped := []string{
+		`]`,
+		`-`,
+	}
+	splitterPattern := ``
+	splitters := append(separators, operators...)
+	// Construct the separators pattern given the list of separators and operators
+	for _, splitter := range splitters {
+		if slices.Contains(stuffThatNeedsToBeEscaped, splitter) {
+			splitterPattern += `\`
+		}
+		splitterPattern += splitter
+	}
+	finalRegEx := `\w+|[` + splitterPattern + `]`
+	re := regexp.MustCompile(finalRegEx)
+	return re.FindAllString(sourceCode, -1)
+}
+
 func main() {
+	const sourceCode = "while (fahr < upper) a = 23.00;"
 	fmt.Println("Welcome to the Peanut Lexer!")
 	fmt.Println("Here are the keywords, operators, and separators:")
 	fmt.Println(keywords)
 	fmt.Println(operators)
 	fmt.Println(separators)
-	fmt.Println("Let the main lexing loop begin...")
-	const sourceCode = "111,222"
+	fmt.Println("Let's separate the source code into lexemes...")
 	fmt.Println("Source code: " + sourceCode)
-	for _, char := range sourceCode {
-		fmt.Println("Character: " + string(char))
+	sourceCodeSplit := splitSourceCode(sourceCode, separators, operators)
+	fmt.Println(sourceCodeSplit)
+	fmt.Println("Let the main lexing loop begin...")
+	for _, tok := range sourceCodeSplit {
+		// TODO: for each lexeme, create a record and identify its token type
+		fmt.Println("Lexeme: '" + tok + "'")
 	}
 }
