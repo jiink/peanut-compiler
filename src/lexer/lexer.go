@@ -61,6 +61,7 @@ var separators = []string{
 	".",
 	",",
 	";",
+	"#",
 }
 
 // Returns true if the given string is found in the
