@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"regexp"
-	"slices"
+	"io"
+	"os"
 )
 
 type tokenType int
@@ -93,41 +93,57 @@ func isSeparator(str string) bool {
 	return false
 }
 
-// Split source code based on whitespace, separators, and operators.
-// Return the pieces of strings.
-func splitSourceCode(sourceCode string, separators []string, operators []string) []string {
-	stuffThatNeedsToBeEscaped := []string{
-		`]`,
-		`-`,
+func isLetter(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')
+}
+
+func isDigit(r rune) bool {
+	return r >= '0' && r <= '9'
+}
+
+func readChar(str string, index *int) rune {
+	char := []rune(str)[*index]
+	*index = *index + 1
+	return char
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
-	splitterPattern := ``
-	splitters := append(separators, operators...)
-	// Construct the separators pattern given the list of separators and operators
-	for _, splitter := range splitters {
-		if slices.Contains(stuffThatNeedsToBeEscaped, splitter) {
-			splitterPattern += `\`
-		}
-		splitterPattern += splitter
-	}
-	finalRegEx := `\w+|[` + splitterPattern + `]`
-	re := regexp.MustCompile(finalRegEx)
-	return re.FindAllString(sourceCode, -1)
 }
 
 func main() {
-	const sourceCode = "while (fahr < upper) a = 23.00;"
-	fmt.Println("Welcome to the Peanut Lexer!")
+	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
 	fmt.Println("Here are the keywords, operators, and separators:")
 	fmt.Println(keywords)
 	fmt.Println(operators)
 	fmt.Println(separators)
-	fmt.Println("Let's separate the source code into lexemes...")
+
+	fmt.Println("Let's read in the source code file.")
+	const sourceCodePath = "test.rat"
+	file, err := os.Open(sourceCodePath)
+	check(err)
+	defer file.Close()
+	// To make things simple we'll just put it all in a string.
+	content, err := io.ReadAll(file)
+	check(err)
+	sourceCode := string(content)
 	fmt.Println("Source code: " + sourceCode)
-	sourceCodeSplit := splitSourceCode(sourceCode, separators, operators)
-	fmt.Println(sourceCodeSplit)
+
 	fmt.Println("Let the main lexing loop begin...")
-	for _, tok := range sourceCodeSplit {
-		// TODO: for each lexeme, create a record and identify its token type
-		fmt.Println("Lexeme: '" + tok + "'")
+	sourceCodePointer := 0 // Points to the current character in the source code
+	for sourceCodePointer < len(sourceCode) {
+		currentChar := readChar(sourceCode, &sourceCodePointer)
+		fmt.Printf("Current character: %c\n", currentChar)
+		if isLetter(currentChar) {
+			//fmt.Println("It's a letter")
+			// Call relevant DFSM
+		} else if isDigit(currentChar) {
+			//fmt.Println("It's a digit")
+			// Call relevant DFSM
+		} else {
+			fmt.Printf("Unrecognized character %c\n", currentChar)
+		}
 	}
 }
