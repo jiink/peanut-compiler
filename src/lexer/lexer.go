@@ -17,6 +17,14 @@ const (
 	Separator
 )
 
+type symbolType int
+
+const (
+	Letter symbolType = iota
+	Digit
+	Special
+)
+
 type record struct {
 	tokenType tokenType
 	lexeme    string
@@ -64,6 +72,8 @@ var separators = []string{
 	"#",
 }
 
+var sourceCode = ""
+
 // Returns true if the given string is found in the
 // list of keywords Rat23F recognizes.
 func isKeyword(str string) bool {
@@ -101,8 +111,8 @@ func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
-func readChar(str string, index *int) rune {
-	char := []rune(str)[*index]
+func readCharSourceCode(index *int) rune {
+	char := []rune(sourceCode)[*index]
 	*index = *index + 1
 	return char
 }
@@ -111,6 +121,17 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func dfsmInteger(sourceCodePointer *int, currentChar rune) {
+	inputSymbolSet := []symbolType{Digit, Letter, Special}
+	transitionTable := [][]int{
+		// d  l  s
+		{1, 2, 3}, // 0
+		{1, 4, 5}, // 1
+		{5, 5, 5}, // 2
+	}
+	acceptingStates := []int{1}
 }
 
 func main() {
@@ -128,13 +149,13 @@ func main() {
 	// To make things simple we'll just put it all in a string.
 	content, err := io.ReadAll(file)
 	check(err)
-	sourceCode := string(content)
+	sourceCode = string(content)
 	fmt.Println("Source code: " + sourceCode)
 
 	fmt.Println("Let the main lexing loop begin...")
 	sourceCodePointer := 0 // Points to the current character in the source code
 	for sourceCodePointer < len(sourceCode) {
-		currentChar := readChar(sourceCode, &sourceCodePointer)
+		currentChar := readCharSourceCode(&sourceCodePointer)
 		fmt.Printf("Current character: %c\n", currentChar)
 		if isLetter(currentChar) {
 			//fmt.Println("It's a letter")
@@ -142,6 +163,7 @@ func main() {
 		} else if isDigit(currentChar) {
 			//fmt.Println("It's a digit")
 			// Call relevant DFSM
+			dfsmInteger(&sourceCodePointer, currentChar)
 		} else {
 			fmt.Printf("Unrecognized character %c\n", currentChar)
 		}

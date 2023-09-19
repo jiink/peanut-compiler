@@ -6,12 +6,6 @@ import (
 	"os"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func main() {
 	// Specify the file path you want to read
 	filePath := "file.txt"
