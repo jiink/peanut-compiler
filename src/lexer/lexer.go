@@ -7,6 +7,9 @@ import (
 	"slices"
 )
 
+////////////////////////////////////////////////////////////////////
+//---- Definitions -------------------------------------------------
+
 type tokenType int
 
 const (
@@ -16,6 +19,7 @@ const (
 	Real
 	Operator
 	Separator
+	Unrecognized
 )
 
 type symbolType int
@@ -29,10 +33,6 @@ const (
 type record struct {
 	tokenType tokenType
 	lexeme    string
-}
-
-type stateMachine struct {
-	currentState int
 }
 
 var keywords = []string{
@@ -73,7 +73,47 @@ var separators = []string{
 	"#",
 }
 
+////////////////////////////////////////////////////////////////////
+//---- Variables ---------------------------------------------------
+
 var sourceCode = ""
+
+////////////////////////////////////////////////////////////////////
+//---- Functions ---------------------------------------------------
+
+func (e tokenType) String() string {
+	switch e {
+	case Identifier:
+		return "Identifier"
+	case Keyword:
+		return "Keyword"
+	case Integer:
+		return "Integer"
+	case Real:
+		return "Real"
+	case Operator:
+		return "Operator"
+	case Separator:
+		return "Separator"
+	case Unrecognized:
+		return "Unrecognized"
+	default:
+		return fmt.Sprintf("%d", int(e))
+	}
+}
+
+func (e symbolType) String() string {
+	switch e {
+	case Letter:
+		return "Letter"
+	case Digit:
+		return "Digit"
+	case Special:
+		return "Special"
+	default:
+		return fmt.Sprintf("%d", int(e))
+	}
+}
 
 // Returns true if the given string is found in the
 // list of keywords Rat23F recognizes.
@@ -146,7 +186,20 @@ func check(e error) {
 	}
 }
 
-func dfsmIdentifier(sourceCodePointer *int, currentChar rune) bool {
+func printRecord(r record) {
+	fmt.Printf("%s\t%s\n", r.tokenType, r.lexeme)
+}
+
+func printRecords(records []record) {
+	fmt.Println("----------------------")
+	fmt.Println("Token\tLexeme")
+	for _, r := range records {
+		printRecord(r)
+	}
+	fmt.Println("----------------------")
+}
+
+func dfsmIdentifier(sourceCodePointer *int) bool {
 	inputSymbolSet := []symbolType{Letter, Digit}
 	// Made from making a graph from a regular expression and
 	// converting it to a DFSM by hand, then assigning a number
@@ -162,30 +215,43 @@ func dfsmIdentifier(sourceCodePointer *int, currentChar rune) bool {
 	acceptingStates := []int{2, 3, 4}
 	currentState := 1
 
-	// Back up char pointer
 	backUp(sourceCodePointer)
 
-	maxSteps := 100
-	for i := 0; i < maxSteps; i++ {
+	maxLength := 500
+	for i := 0; i < maxLength; i++ {
 		newChar := readCharSourceCode(sourceCodePointer)
 		fmt.Printf("new char: %c\n", newChar)
 		symbol := charToSymbolType(newChar)
 		columnIndex := slices.Index(inputSymbolSet, symbol)
 		if columnIndex == -1 {
-			fmt.Printf("Invalid symbol: %d\n", symbol)
+			fmt.Printf("Invalid symbol: %s. Ending FSM...\n", symbol)
 			break
 		}
-		fmt.Printf("Current state: %d, Symbol: %d\n", currentState, symbol)
+		fmt.Printf("Current state: %d, Symbol: %s\n", currentState, symbol)
 		currentState = transitionTable[currentState][columnIndex]
 		fmt.Printf("New state: %d\n\n", currentState)
 		// 0 is the unrecoverable state.
 		if currentState == 0 {
-			fmt.Printf("Fell into unrecoverable state.\n")
+			fmt.Printf("Fell into unrecoverable state. Ending FSM.\n")
 			return false
 		}
 	}
 	fmt.Printf("Final state: %d\n", currentState)
 	return isAcceptingState(currentState, acceptingStates)
+}
+
+func readInSourceCode() {
+	fmt.Println("Let's read in the source code file.")
+	const sourceCodePath = "test.rat"
+	file, err := os.Open(sourceCodePath)
+	check(err)
+	defer file.Close()
+
+	// To make things simple we'll just put it all in a string.
+	content, err := io.ReadAll(file)
+	check(err)
+	sourceCode = string(content)
+	fmt.Println("Source code: " + sourceCode)
 }
 
 func main() {
@@ -195,41 +261,41 @@ func main() {
 	fmt.Println(operators)
 	fmt.Println(separators)
 
-	fmt.Println("Let's read in the source code file.")
-	const sourceCodePath = "test.rat"
-	file, err := os.Open(sourceCodePath)
-	check(err)
-	defer file.Close()
-	// To make things simple we'll just put it all in a string.
-	content, err := io.ReadAll(file)
-	check(err)
-	sourceCode = string(content)
-	fmt.Println("Source code: " + sourceCode)
+	readInSourceCode()
 
 	fmt.Println("Let the main lexing loop begin...")
+	var records []record
 	sourceCodePointer := 0 // Points to the current character in the source code
 	for sourceCodePointer < len(sourceCode) {
-		accepted := false
+		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
 		currentChar := readCharSourceCode(&sourceCodePointer)
-		//fmt.Printf("Current character: %c is type %d\n", currentChar, charToSymbolType(currentChar))
+
 		if isLetter(currentChar) {
-			//fmt.Println("It's a letter")
-			// Call relevant DFSM
-			accepted = dfsmIdentifier(&sourceCodePointer, currentChar)
+			// Call relevant DFSM. Identifiers start with a letter.
+			if dfsmIdentifier(&sourceCodePointer) {
+				tokenType = Identifier
+			}
 		} else if isDigit(currentChar) {
-			//fmt.Println("It's a digit")
-			// Call relevant DFSM
-			//dfsmInteger(&sourceCodePointer, currentChar)
+			// Call relevant DFSM. Integers and reals start with a digit.
 		} else {
-			fmt.Printf("Unrecognized character %c\n", currentChar)
+			fmt.Printf("Unhandled character '%c'\n", currentChar)
+			tokenType = Unrecognized
 		}
-		if accepted {
+
+		if tokenType != Unrecognized {
 			backUp(&sourceCodePointer)
 			lexemeEndIndex := sourceCodePointer
-			fmt.Printf("\"%s\" Accepted! (from %d to %d)\n", sourceCode[lexemeStartIndex:lexemeEndIndex], lexemeStartIndex, lexemeEndIndex)
+			lexeme := sourceCode[lexemeStartIndex:lexemeEndIndex]
+			fmt.Printf("\"%s\" Accepted!\n", lexeme)
+			// If it's an identifier, it might be a keyword
+			if tokenType == Identifier && isKeyword(lexeme) {
+				tokenType = Keyword
+			}
+			records = append(records, record{tokenType: tokenType, lexeme: lexeme})
 		} else {
 			fmt.Printf("Rejected.\n")
 		}
 	}
+	printRecords(records)
 }
