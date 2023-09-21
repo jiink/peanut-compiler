@@ -81,6 +81,8 @@ var sourceCode = ""
 ////////////////////////////////////////////////////////////////////
 //---- Functions ---------------------------------------------------
 
+/* ---- Helpers --------------------------------------- */
+
 func (e tokenType) String() string {
 	switch e {
 	case Identifier:
@@ -187,17 +189,19 @@ func check(e error) {
 }
 
 func printRecord(r record) {
-	fmt.Printf("%s\t%s\n", r.tokenType, r.lexeme)
+	fmt.Printf("%s\t:\t%s\n", r.tokenType, r.lexeme)
 }
 
 func printRecords(records []record) {
 	fmt.Println("----------------------")
-	fmt.Println("Token\tLexeme")
+	fmt.Println("[Token]\t:\t[Lexeme]")
 	for _, r := range records {
 		printRecord(r)
 	}
 	fmt.Println("----------------------")
 }
+
+/* ---- The main attractions -------------------------- */
 
 func dfsmIdentifier(sourceCodePointer *int) bool {
 	inputSymbolSet := []symbolType{Letter, Digit}
@@ -216,11 +220,10 @@ func dfsmIdentifier(sourceCodePointer *int) bool {
 	currentState := 1
 
 	backUp(sourceCodePointer)
-
 	maxLength := 500
 	for i := 0; i < maxLength; i++ {
 		newChar := readCharSourceCode(sourceCodePointer)
-		fmt.Printf("new char: %c\n", newChar)
+		fmt.Printf("New char: '%c'\n", newChar)
 		symbol := charToSymbolType(newChar)
 		columnIndex := slices.Index(inputSymbolSet, symbol)
 		if columnIndex == -1 {
