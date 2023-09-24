@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strings"
+	"regexp"
 )
 
 ////////////////////////////////////////////////////////////////////
@@ -193,12 +195,37 @@ func printRecord(r record) {
 }
 
 func printRecords(records []record) {
+	// Print to console
 	fmt.Println("----------------------")
 	fmt.Println("[Token]\t:\t[Lexeme]")
 	for _, r := range records {
 		printRecord(r)
 	}
 	fmt.Println("----------------------")
+
+	// Create output
+	f, err := os.Create("output.txt")
+	check(err)
+
+  defer f.Close()
+
+  f.WriteString("----------------------\n")
+	f.WriteString("[Token]\t:\t[Lexeme]\n")
+	for _, r := range records {
+		var s = fmt.Sprint(r.tokenType) + "\t:\t" + r.lexeme + "\n"
+		f.WriteString(s)
+	}
+}
+
+func trimWhiteSpace(s string) string {
+	return strings.Join(strings.Fields(s), " ")
+}
+
+func removeComments(s string) string {
+
+	re := regexp.MustCompile(`(?s)\[\*.*?\*\]`)
+
+	return re.ReplaceAllString(s, "")
 }
 
 /* ---- The main attractions -------------------------- */
@@ -209,7 +236,7 @@ func dfsmIdentifier(sourceCodePointer *int) bool {
 	// converting it to a DFSM by hand, then assigning a number
 	// to each unique state.
 	transitionTable := [][]int{
-		// l  d
+	// l  d
 		{0, 0}, // 0
 		{2, 0}, // 1
 		{3, 4}, // 2
@@ -255,6 +282,8 @@ func readInSourceCode() {
 	check(err)
 	sourceCode = string(content)
 	fmt.Println("Source code: " + sourceCode)
+	sourceCode = removeComments(sourceCode)
+	sourceCode = trimWhiteSpace(sourceCode)
 }
 
 func main() {
