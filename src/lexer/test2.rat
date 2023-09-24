@@ -1,0 +1,19 @@
+[* this is comment for this sample code which
+  converts Fahrenheit into Celcius *]
+
+function convert1x (fahr integer)
+{
+  ret 5 * (fahr -32) / 9;
+}
+
+#
+  integer low, high, step; [* declarations *]
+
+  get (low, high, step);
+  while (low <= high )
+    { put (low);
+      put (convert1x (low));
+      low = low + step;
+    }
+    
+#
