@@ -331,3 +331,45 @@ func main() {
 	}
 	printRecords(records)
 }
+
+/* --------- integrating FSMs ----------- */
+func lexer(sourceCode string) ([]record, error) {
+
+	tokens := []record{}
+	sourceCodePointer := 0
+	fsmIdentifier := NewFSM() // fsm for identifiers
+	fsmInteger := NewFSM()    // fsm for integers
+	fsmReal := NewFSM()       // fsm for reals
+	for sourceCodePointer < len(sourceCode) {
+		currentChar := rune(sourceCode[sourceCodePointer])
+
+		// for identifiers, integers, and reals
+		fsmIdentifier.transition(currentChar)
+		fsmInteger.transition(currentChar)
+		fsmReal.transition(currentChar)
+
+		// used to create tokens whenever it is required
+		switch {
+		case fsmIdentifier.currentState == StateIdentifier:
+			lexeme := ""
+			for fsmIdentifier.currentState == StateIdentifier && sourceCodePointer < len(sourceCode) {
+				lexeme += string(currentChar)
+				sourceCodePointer++
+				if sourceCodePointer < len(sourceCode) {
+					currentChar = rune(sourceCode[sourceCodePointer])
+				}
+				fsmIdentifier.transition(currentChar)
+			}
+			tokens = append(tokens, record{tokenType: Identifier, lexeme: lexeme})
+		}
+		// error if char is not recognized
+		if fsmIdentifier.currentState == StateStart &&
+			fsmInteger.currentState == StateStart &&
+			fsmReal.currentState == StateStart {
+			fmt.Printf("Invalid Character %c\n", currentChar)
+			sourceCodePointer++
+		}
+	}
+	return tokens, nil
+}
+
