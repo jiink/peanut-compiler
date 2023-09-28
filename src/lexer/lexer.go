@@ -29,6 +29,7 @@ type symbolType int
 const (
 	Letter symbolType = iota
 	Digit
+	Period
 	Special
 )
 
@@ -171,6 +172,9 @@ func charToSymbolType(r rune) symbolType {
 	if isDigit(r) {
 		return Digit
 	}
+	if r == '.' {
+		return Period
+	}
 	return Special
 }
 
@@ -234,6 +238,8 @@ func removeComments(s string) string {
 
 /* ---- The main attractions -------------------------- */
 
+// Returns false when the FSM must end, and true when it's ready
+// to accept a new symbol.
 func (f *FSM) transition(symbol symbolType) bool {
 	columnIndex := slices.Index(f.inputSymbolSet, symbol)
 	if columnIndex == -1 {
@@ -329,27 +335,29 @@ func lexer(sourceCode string) ([]record, error) {
 		initialState:    1,
 	} // FSM for identifiers
 
-	// fsmInteger := FSM{
-	// 	inputSymbolSet: []symbolType{Digit},
-	// 	transitionTable: [][]int{
-	// 		// d
-	// 		{0, 0}, // 0
-	// 		{0, 0}, // 1
-	// 	},
-	// 	acceptingStates: []int{0},
-	// 	currentState:    0,
-	// } // FSM for integers
+	fsmReal := FSM{
+		inputSymbolSet: []symbolType{Digit, Period},
+		transitionTable: [][]int{
+			// d, p
+			{0, 0}, // 0
+			{2, 2}, // 1
+			{2, 2}, // 2
+		},
+		acceptingStates: []int{0},
+		initialState:    1,
+	} // FSM for reals
 
-	// fsmReal := FSM{
-	// 	inputSymbolSet: []symbolType{Digit},
-	// 	transitionTable: [][]int{
-	// 		// d
-	// 		{0, 0}, // 0
-	// 		{0, 0}, // 1
-	// 	},
-	// 	acceptingStates: []int{0},
-	// 	currentState:    0,
-	// } // FSM for reals
+	fsmInteger := FSM{
+		inputSymbolSet: []symbolType{Digit},
+		transitionTable: [][]int{
+			// d
+			{0}, // 0
+			{2}, // 1
+			{2}, // 2
+		},
+		acceptingStates: []int{0},
+		initialState:    1,
+	} // FSM for integers
 
 	for sourceCodePointer < len(sourceCode) {
 		tokenType := Unrecognized
@@ -357,15 +365,35 @@ func lexer(sourceCode string) ([]record, error) {
 		currentChar := readCharSourceCode(&sourceCodePointer)
 
 		if isLetter(currentChar) {
-			// Call relevant DFSM. Identifiers start with a letter.
+			// Identifiers start with a letter.
 			if fsmIdentifier.run(&sourceCodePointer) {
 				tokenType = Identifier
 			}
 		} else if isDigit(currentChar) {
-			// Call relevant DFSM. Integers and reals start with a digit.
+			// Reals and integers start with a digit.
+			// First check if a real is here. If not, back up and try again as an integer
+			sourceCodePointerBookmark := sourceCodePointer
+			if fsmReal.run(&sourceCodePointer) {
+				tokenType = Real
+			} else {
+				sourceCodePointer = sourceCodePointerBookmark
+				if fsmInteger.run(&sourceCodePointer) {
+					tokenType = Integer
+				}
+			}
 		} else {
-			fmt.Printf("Unhandled character '%c'\n", currentChar)
-			tokenType = Unrecognized
+			// See if it's a separator, if not, see if it's an operator.
+			if isSeparator(string(currentChar)) {
+				tokenType = Separator
+				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
+			} else if isOperator(string(currentChar)) {
+				tokenType = Operator
+				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
+			} else {
+				// Man, we must not know WHAT this is!
+				fmt.Printf("Unhandled character '%c'\n", currentChar)
+				tokenType = Unrecognized
+			}
 		}
 
 		if tokenType != Unrecognized {
