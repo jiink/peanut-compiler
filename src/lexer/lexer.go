@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
-	"regexp"
 )
 
-////////////////////////////////////////////////////////////////////
 //---- Definitions -------------------------------------------------
+////////////////////////////////////////////////////////////////////
 
 type tokenType int
 
@@ -75,13 +75,21 @@ var separators = []string{
 	"#",
 }
 
-////////////////////////////////////////////////////////////////////
+type FSM struct {
+	inputSymbolSet  []symbolType
+	transitionTable [][]int
+	acceptingStates []int
+	initialState    int
+	currentState    int
+}
+
 //---- Variables ---------------------------------------------------
+////////////////////////////////////////////////////////////////////
 
 var sourceCode = ""
 
-////////////////////////////////////////////////////////////////////
 //---- Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////
 
 /* ---- Helpers --------------------------------------- */
 
@@ -180,10 +188,6 @@ func backUp(index *int) bool {
 	return true
 }
 
-func isAcceptingState(currentState int, acceptingStates []int) bool {
-	return slices.Contains(acceptingStates, currentState)
-}
-
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -207,9 +211,9 @@ func printRecords(records []record) {
 	f, err := os.Create("output.txt")
 	check(err)
 
-  defer f.Close()
+	defer f.Close()
 
-  f.WriteString("----------------------\n")
+	f.WriteString("----------------------\n")
 	f.WriteString("[Token]\t:\t[Lexeme]\n")
 	for _, r := range records {
 		var s = fmt.Sprint(r.tokenType) + "\t:\t" + r.lexeme + "\n"
@@ -230,44 +234,45 @@ func removeComments(s string) string {
 
 /* ---- The main attractions -------------------------- */
 
-func dfsmIdentifier(sourceCodePointer *int) bool {
-	inputSymbolSet := []symbolType{Letter, Digit}
-	// Made from making a graph from a regular expression and
-	// converting it to a DFSM by hand, then assigning a number
-	// to each unique state.
-	transitionTable := [][]int{
-	// l  d
-		{0, 0}, // 0
-		{2, 0}, // 1
-		{3, 4}, // 2
-		{3, 4}, // 3
-		{3, 4}, // 4
+func (f *FSM) transition(symbol symbolType) bool {
+	columnIndex := slices.Index(f.inputSymbolSet, symbol)
+	if columnIndex == -1 {
+		fmt.Printf("Invalid symbol: %s. Ending FSM...\n", symbol)
+		return false
 	}
-	acceptingStates := []int{2, 3, 4}
-	currentState := 1
+	fmt.Printf("Current state: %d, Symbol: %s\n", f.currentState, symbol)
+	f.currentState = f.transitionTable[f.currentState][columnIndex]
+	fmt.Printf("New state: %d\n\n", f.currentState)
+	// 0 is the unrecoverable state.
+	if f.currentState == 0 {
+		fmt.Printf("Fell into unrecoverable state. Ending FSM.\n")
+		return false
+	}
+	return true
+}
 
+func (f *FSM) reset() {
+	f.currentState = f.initialState
+}
+
+func (f *FSM) isInAcceptingState() bool {
+	return slices.Contains(f.acceptingStates, f.currentState)
+}
+
+func (f *FSM) run(sourceCodePointer *int) bool {
+	f.reset()
 	backUp(sourceCodePointer)
 	maxLength := 500
 	for i := 0; i < maxLength; i++ {
 		newChar := readCharSourceCode(sourceCodePointer)
 		fmt.Printf("New char: '%c'\n", newChar)
 		symbol := charToSymbolType(newChar)
-		columnIndex := slices.Index(inputSymbolSet, symbol)
-		if columnIndex == -1 {
-			fmt.Printf("Invalid symbol: %s. Ending FSM...\n", symbol)
+		if !f.transition(symbol) {
 			break
 		}
-		fmt.Printf("Current state: %d, Symbol: %s\n", currentState, symbol)
-		currentState = transitionTable[currentState][columnIndex]
-		fmt.Printf("New state: %d\n\n", currentState)
-		// 0 is the unrecoverable state.
-		if currentState == 0 {
-			fmt.Printf("Fell into unrecoverable state. Ending FSM.\n")
-			return false
-		}
 	}
-	fmt.Printf("Final state: %d\n", currentState)
-	return isAcceptingState(currentState, acceptingStates)
+	fmt.Printf("Final state: %d\n", f.currentState)
+	return f.isInAcceptingState()
 }
 
 func readInSourceCode() {
@@ -296,8 +301,56 @@ func main() {
 	readInSourceCode()
 
 	fmt.Println("Let the main lexing loop begin...")
-	var records []record
-	sourceCodePointer := 0 // Points to the current character in the source code
+	var records, err = lexer(sourceCode)
+	if err != nil {
+		fmt.Println("The lexer encountered an error.")
+	} else {
+		printRecords(records)
+	}
+}
+
+/* --------- integrating FSMs ----------- */
+func lexer(sourceCode string) ([]record, error) {
+
+	records := []record{}
+	sourceCodePointer := 0
+
+	fsmIdentifier := FSM{
+		inputSymbolSet: []symbolType{Letter, Digit},
+		transitionTable: [][]int{
+			// l  d
+			{0, 0}, // 0
+			{2, 0}, // 1
+			{3, 4}, // 2
+			{3, 4}, // 3
+			{3, 4}, // 4
+		},
+		acceptingStates: []int{2, 3, 4},
+		initialState:    1,
+	} // FSM for identifiers
+
+	// fsmInteger := FSM{
+	// 	inputSymbolSet: []symbolType{Digit},
+	// 	transitionTable: [][]int{
+	// 		// d
+	// 		{0, 0}, // 0
+	// 		{0, 0}, // 1
+	// 	},
+	// 	acceptingStates: []int{0},
+	// 	currentState:    0,
+	// } // FSM for integers
+
+	// fsmReal := FSM{
+	// 	inputSymbolSet: []symbolType{Digit},
+	// 	transitionTable: [][]int{
+	// 		// d
+	// 		{0, 0}, // 0
+	// 		{0, 0}, // 1
+	// 	},
+	// 	acceptingStates: []int{0},
+	// 	currentState:    0,
+	// } // FSM for reals
+
 	for sourceCodePointer < len(sourceCode) {
 		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
@@ -305,7 +358,7 @@ func main() {
 
 		if isLetter(currentChar) {
 			// Call relevant DFSM. Identifiers start with a letter.
-			if dfsmIdentifier(&sourceCodePointer) {
+			if fsmIdentifier.run(&sourceCodePointer) {
 				tokenType = Identifier
 			}
 		} else if isDigit(currentChar) {
@@ -329,47 +382,5 @@ func main() {
 			fmt.Printf("Rejected.\n")
 		}
 	}
-	printRecords(records)
+	return records, nil
 }
-
-/* --------- integrating FSMs ----------- */
-func lexer(sourceCode string) ([]record, error) {
-
-	tokens := []record{}
-	sourceCodePointer := 0
-	fsmIdentifier := NewFSM() // fsm for identifiers
-	fsmInteger := NewFSM()    // fsm for integers
-	fsmReal := NewFSM()       // fsm for reals
-	for sourceCodePointer < len(sourceCode) {
-		currentChar := rune(sourceCode[sourceCodePointer])
-
-		// for identifiers, integers, and reals
-		fsmIdentifier.transition(currentChar)
-		fsmInteger.transition(currentChar)
-		fsmReal.transition(currentChar)
-
-		// used to create tokens whenever it is required
-		switch {
-		case fsmIdentifier.currentState == StateIdentifier:
-			lexeme := ""
-			for fsmIdentifier.currentState == StateIdentifier && sourceCodePointer < len(sourceCode) {
-				lexeme += string(currentChar)
-				sourceCodePointer++
-				if sourceCodePointer < len(sourceCode) {
-					currentChar = rune(sourceCode[sourceCodePointer])
-				}
-				fsmIdentifier.transition(currentChar)
-			}
-			tokens = append(tokens, record{tokenType: Identifier, lexeme: lexeme})
-		}
-		// error if char is not recognized
-		if fsmIdentifier.currentState == StateStart &&
-			fsmInteger.currentState == StateStart &&
-			fsmReal.currentState == StateStart {
-			fmt.Printf("Invalid Character %c\n", currentChar)
-			sourceCodePointer++
-		}
-	}
-	return tokens, nil
-}
-
