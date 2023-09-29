@@ -46,6 +46,7 @@ var keywords = []string{
 	"ret",
 	"put",
 	"get",
+	"integer",
 	"bool",
 	"real",
 	"while",
@@ -286,7 +287,7 @@ func (f *FSM) run(sourceCodePointer *int) bool {
 
 func readInSourceCode() {
 	fmt.Println("Let's read in the source code file.")
-	const sourceCodePath = "test.rat"
+	const sourceCodePath = "test2.rat"
 	file, err := os.Open(sourceCodePath)
 	check(err)
 	defer file.Close()
