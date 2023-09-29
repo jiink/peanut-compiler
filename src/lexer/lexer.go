@@ -179,7 +179,10 @@ func charToSymbolType(r rune) symbolType {
 }
 
 func readCharSourceCode(index *int) rune {
-	char := []rune(sourceCode)[*index]
+	char := ' '
+	if *index < len(sourceCode) {
+		char = []rune(sourceCode)[*index]
+	}
 	*index = *index + 1
 	return char
 }
@@ -366,7 +369,7 @@ func lexer(sourceCode string) ([]record, error) {
 		initialState:    1,
 	} // FSM for integers
 
-	for sourceCodePointer < len(sourceCode)-1 {
+	for sourceCodePointer < len(sourceCode) {
 		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
 		currentChar := readCharSourceCode(&sourceCodePointer)
