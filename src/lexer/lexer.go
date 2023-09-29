@@ -398,7 +398,10 @@ func lexer(sourceCode string) ([]record, error) {
 				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
 			} else if isOperator(string(currentChar)) {
 				tokenType = Operator
-				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
+				nextChar := readCharSourceCode(&sourceCodePointer) // Peek at next character for 2-char operators (e.g. ==)
+				if isOperator(string(currentChar) + string(nextChar)) {
+					_ = readCharSourceCode(&sourceCodePointer) // Backs up later
+				}
 			} else {
 				// Man, we must not know WHAT this is!
 				fmt.Printf("Unhandled character '%c'\n", currentChar)
