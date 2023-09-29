@@ -88,6 +88,7 @@ type FSM struct {
 //---- Variables ---------------------------------------------------
 ////////////////////////////////////////////////////////////////////
 
+var inputFileName = ""
 var sourceCode = ""
 
 //---- Functions ---------------------------------------------------
@@ -285,9 +286,9 @@ func (f *FSM) run(sourceCodePointer *int) bool {
 	return f.isInAcceptingState()
 }
 
-func readInSourceCode() {
+func readInSourceCode(path string) {
 	fmt.Println("Let's read in the source code file.")
-	const sourceCodePath = "test2.rat"
+	sourceCodePath := path
 	file, err := os.Open(sourceCodePath)
 	check(err)
 	defer file.Close()
@@ -302,13 +303,15 @@ func readInSourceCode() {
 }
 
 func main() {
+	inputFileName = os.Args[1]
+
 	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
 	fmt.Println("Here are the keywords, operators, and separators:")
 	fmt.Println(keywords)
 	fmt.Println(operators)
 	fmt.Println(separators)
 
-	readInSourceCode()
+	readInSourceCode(inputFileName)
 
 	fmt.Println("Let the main lexing loop begin...")
 	var records, err = lexer(sourceCode)
