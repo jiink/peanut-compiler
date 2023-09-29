@@ -321,6 +321,11 @@ func lexer(sourceCode string) ([]record, error) {
 	records := []record{}
 	sourceCodePointer := 0
 
+	// The transition tables are made by hand. After drawing a
+	// non-deterministic FSM diagram, it is converted
+	// into a DFSM table and then each state is given
+	// a number and entered into tables in these structs.
+
 	fsmIdentifier := FSM{
 		inputSymbolSet: []symbolType{Letter, Digit},
 		transitionTable: [][]int{
@@ -340,10 +345,12 @@ func lexer(sourceCode string) ([]record, error) {
 		transitionTable: [][]int{
 			// d, p
 			{0, 0}, // 0
-			{2, 2}, // 1
-			{2, 2}, // 2
+			{2, 0}, // 1
+			{2, 3}, // 2
+			{4, 0}, // 3
+			{4, 0}, // 4
 		},
-		acceptingStates: []int{0},
+		acceptingStates: []int{4},
 		initialState:    1,
 	} // FSM for reals
 
@@ -355,11 +362,11 @@ func lexer(sourceCode string) ([]record, error) {
 			{2}, // 1
 			{2}, // 2
 		},
-		acceptingStates: []int{0},
+		acceptingStates: []int{2},
 		initialState:    1,
 	} // FSM for integers
 
-	for sourceCodePointer < len(sourceCode) {
+	for sourceCodePointer < len(sourceCode)-1 {
 		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
 		currentChar := readCharSourceCode(&sourceCodePointer)
