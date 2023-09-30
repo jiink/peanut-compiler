@@ -12,6 +12,8 @@ import (
 //---- Definitions -------------------------------------------------
 ////////////////////////////////////////////////////////////////////
 
+var debugEnabled = false // Enables/disables debug log messages
+
 type tokenType int
 
 const (
@@ -96,6 +98,14 @@ var sourceCode = ""
 
 /* ---- Helpers --------------------------------------- */
 
+// Prints a debug message to the console if debugEnabled is true.
+func logDebug(format string, args ...interface{}) {
+	if debugEnabled {
+		fmt.Printf("[DEBUG] "+format, args...)
+	}
+}
+
+// Returns a string representation of the given tokenType.
 func (e tokenType) String() string {
 	switch e {
 	case Identifier:
@@ -117,6 +127,7 @@ func (e tokenType) String() string {
 	}
 }
 
+// Returns a string representation of the given symbolType.
 func (e symbolType) String() string {
 	switch e {
 	case Letter:
@@ -141,6 +152,8 @@ func isKeyword(str string) bool {
 	return false
 }
 
+// Returns true if the given string is found in the
+// list of operators Rat23F recognizes.
 func isOperator(str string) bool {
 	for _, operator := range operators {
 		if str == operator {
@@ -150,6 +163,8 @@ func isOperator(str string) bool {
 	return false
 }
 
+// Returns true if the given string is found in the
+// list of separators Rat23F recognizes.
 func isSeparator(str string) bool {
 	for _, separator := range separators {
 		if str == separator {
@@ -159,14 +174,18 @@ func isSeparator(str string) bool {
 	return false
 }
 
+// Returns true if the given rune is in the English alphabet.
 func isLetter(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')
 }
 
+// Returns true if the given rune is a 0 through 9 digit.
 func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
+// Returns the symbolType associated with the given rune.
+// This symbol type can be given to a finite state machine.
 func charToSymbolType(r rune) symbolType {
 	if isLetter(r) {
 		return Letter
@@ -180,6 +199,8 @@ func charToSymbolType(r rune) symbolType {
 	return Special
 }
 
+// Returns the character of the source code at the given index,
+// and increments the index for the subsequent calls.
 func readCharSourceCode(index *int) rune {
 	char := ' '
 	if *index < len(sourceCode) {
@@ -189,6 +210,7 @@ func readCharSourceCode(index *int) rune {
 	return char
 }
 
+// Decrements the given index.
 func backUp(index *int) bool {
 	if *index < 1 {
 		return false
@@ -197,16 +219,20 @@ func backUp(index *int) bool {
 	return true
 }
 
+// Panics if the given error is not nil.
 func check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
+// Prints the given lexer record to the console.
 func printRecord(r record) {
 	fmt.Printf("%s\t:\t%s\n", r.tokenType, r.lexeme)
 }
 
+// Prints the given lexer records to the console and to an output file
+// whos path depends on the Rat23F input file.
 func printRecords(records []record) {
 	// Print to console
 	fmt.Println("----------------------")
@@ -217,23 +243,26 @@ func printRecords(records []record) {
 	fmt.Println("----------------------")
 
 	// Create output
-	f, err := os.Create("output.txt")
+	outputPath := inputFileName + ".out"
+	f, err := os.Create(outputPath)
 	check(err)
 
 	defer f.Close()
 
-	f.WriteString("----------------------\n")
 	f.WriteString("[Token]\t:\t[Lexeme]\n")
 	for _, r := range records {
 		var s = fmt.Sprint(r.tokenType) + "\t:\t" + r.lexeme + "\n"
 		f.WriteString(s)
 	}
+	fmt.Printf("Wrote output to: %s\n", outputPath)
 }
 
+// Removes all whitespace from the given string.
 func trimWhiteSpace(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
+// Removes all Rat23F comments from the given string.
 func removeComments(s string) string {
 
 	re := regexp.MustCompile(`(?s)\[\*.*?\*\]`)
@@ -248,46 +277,50 @@ func removeComments(s string) string {
 func (f *FSM) transition(symbol symbolType) bool {
 	columnIndex := slices.Index(f.inputSymbolSet, symbol)
 	if columnIndex == -1 {
-		fmt.Printf("Invalid symbol: %s. Ending FSM...\n", symbol)
+		logDebug("Invalid symbol: %s. Ending FSM...\n", symbol)
 		return false
 	}
-	fmt.Printf("Current state: %d, Symbol: %s\n", f.currentState, symbol)
+	logDebug("Current state: %d, Symbol: %s\n", f.currentState, symbol)
 	f.currentState = f.transitionTable[f.currentState][columnIndex]
-	fmt.Printf("New state: %d\n\n", f.currentState)
+	logDebug("New state: %d\n\n", f.currentState)
 	// 0 is the unrecoverable state.
 	if f.currentState == 0 {
-		fmt.Printf("Fell into unrecoverable state. Ending FSM.\n")
+		logDebug("Fell into unrecoverable state. Ending FSM.\n")
 		return false
 	}
 	return true
 }
 
+// Resets the FSM to its initial state.
 func (f *FSM) reset() {
 	f.currentState = f.initialState
 }
 
+// Returns true if the FSM is in an accepting state.
 func (f *FSM) isInAcceptingState() bool {
 	return slices.Contains(f.acceptingStates, f.currentState)
 }
 
+// Runs the FSM on the Rat23F source code, starting at the given index.
 func (f *FSM) run(sourceCodePointer *int) bool {
 	f.reset()
 	backUp(sourceCodePointer)
 	maxLength := 500
 	for i := 0; i < maxLength; i++ {
 		newChar := readCharSourceCode(sourceCodePointer)
-		fmt.Printf("New char: '%c'\n", newChar)
+		logDebug("New char: '%c'\n", newChar)
 		symbol := charToSymbolType(newChar)
 		if !f.transition(symbol) {
 			break
 		}
 	}
-	fmt.Printf("Final state: %d\n", f.currentState)
+	logDebug("Final state: %d\n", f.currentState)
 	return f.isInAcceptingState()
 }
 
+// Reads in the Rat23F source code from the given path and
+// stores it in the global variable `sourceCode`.
 func readInSourceCode(path string) {
-	fmt.Println("Let's read in the source code file.")
 	sourceCodePath := path
 	file, err := os.Open(sourceCodePath)
 	check(err)
@@ -297,32 +330,15 @@ func readInSourceCode(path string) {
 	content, err := io.ReadAll(file)
 	check(err)
 	sourceCode = string(content)
-	fmt.Println("Source code: " + sourceCode)
+	logDebug("Source code: %s\n", sourceCode)
 	sourceCode = removeComments(sourceCode)
 	sourceCode = trimWhiteSpace(sourceCode)
+	fmt.Printf("Opened file: %s\n", sourceCodePath)
 }
 
-func main() {
-	inputFileName = os.Args[1]
-
-	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
-	fmt.Println("Here are the keywords, operators, and separators:")
-	fmt.Println(keywords)
-	fmt.Println(operators)
-	fmt.Println(separators)
-
-	readInSourceCode(inputFileName)
-
-	fmt.Println("Let the main lexing loop begin...")
-	var records, err = lexer(sourceCode)
-	if err != nil {
-		fmt.Println("The lexer encountered an error.")
-	} else {
-		printRecords(records)
-	}
-}
-
-/* --------- integrating FSMs ----------- */
+// Runs the lexer on the given Rat23F source code.
+// Returns a slice of lexer records, showing
+// the token type and lexeme for each token identified.
 func lexer(sourceCode string) ([]record, error) {
 
 	records := []record{}
@@ -408,7 +424,7 @@ func lexer(sourceCode string) ([]record, error) {
 				}
 			} else {
 				// Man, we must not know WHAT this is!
-				fmt.Printf("Unhandled character '%c'\n", currentChar)
+				logDebug("Unhandled character '%c'\n", currentChar)
 				tokenType = Unrecognized
 			}
 		}
@@ -417,15 +433,35 @@ func lexer(sourceCode string) ([]record, error) {
 			backUp(&sourceCodePointer)
 			lexemeEndIndex := sourceCodePointer
 			lexeme := sourceCode[lexemeStartIndex:lexemeEndIndex]
-			fmt.Printf("\"%s\" Accepted!\n", lexeme)
+			logDebug("\"%s\" Accepted!\n", lexeme)
 			// If it's an identifier, it might be a keyword
 			if tokenType == Identifier && isKeyword(lexeme) {
 				tokenType = Keyword
 			}
 			records = append(records, record{tokenType: tokenType, lexeme: lexeme})
 		} else {
-			fmt.Printf("Rejected.\n")
+			logDebug("Rejected.\n")
 		}
 	}
 	return records, nil
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		return
+	}
+	inputFileName = os.Args[1]
+	if len(inputFileName) < 1 {
+		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		return
+	}
+	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
+	readInSourceCode(inputFileName)
+	var records, err = lexer(sourceCode)
+	if err != nil {
+		fmt.Println("The lexer encountered an error.")
+	} else {
+		printRecords(records)
+	}
 }
