@@ -14,8 +14,14 @@ Assignment 1 - create a lexer
 
 1. Download and install Go from https://go.dev/dl/
 1. Clone the repository
-2. Edit code (the .go files) in [src\lexer](src/lexer)
-1. Run [src\run.bat](src/run.bat) or use the command `go run` to run the .go file.
+1. Edit code (the _.go_ files) in [src\lexer](src/lexer)
+1. Use the command `go run` to run the .go file.
+
+### Building an exe
+
+1. In the command prompt, navigate to the directory _lexer.go_ is in.
+1. Run `go build lexer.go`
+1. Observe the creation of _lexer.exe_
 
 ## Resources
 
