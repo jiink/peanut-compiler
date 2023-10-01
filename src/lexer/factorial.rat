@@ -1,0 +1,24 @@
+[* This is a Rat23F program that calculates the factorial of a given integer *]
+
+function factorial(n integer)
+{
+    if (n == 0)
+    {
+        ret 1;  [* Base case: factorial of 0 is 1 *]
+    }
+    else
+    {
+        ret n * factorial(n - 1);  [* Recursive case: n! = n * (n-1)! *]
+    }
+}
+
+#
+
+integer num;
+
+[* read integer from user *]
+get(num);
+[* Print factorial of the integer *]
+put(factorial(num));
+
+#
