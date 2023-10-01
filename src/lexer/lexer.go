@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-//---- Definitions -------------------------------------------------
-////////////////////////////////////////////////////////////////////
+//---- Definitions ----------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
 
 var debugEnabled = false // Enables/disables debug log messages
 
@@ -87,14 +87,14 @@ type FSM struct {
 	currentState    int
 }
 
-//---- Variables ---------------------------------------------------
-////////////////////////////////////////////////////////////////////
+//---- Variables ------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
 
-var inputFileName = ""
+var inputFilePath = ""
 var sourceCode = ""
 
-//---- Functions ---------------------------------------------------
-////////////////////////////////////////////////////////////////////
+//---- Functions ------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
 
 /* ---- Helpers --------------------------------------- */
 
@@ -226,34 +226,31 @@ func check(e error) {
 	}
 }
 
-// Prints the given lexer record to the console.
-func printRecord(r record) {
-	fmt.Printf("%s\t:\t%s\n", r.tokenType, r.lexeme)
+// Converts a given list of records into a 2-column table string.
+func recordsToString(records []record) string {
+	columnWidth := 12
+	s := "----------------------\n"
+	s += "[Token]" + strings.Repeat(" ", columnWidth-7) + ": [Lexeme]\n"
+	for _, r := range records {
+		s += fmt.Sprintf("%s%s: %s\n", r.tokenType, strings.Repeat(" ", columnWidth-len(r.tokenType.String())), r.lexeme)
+	}
+	s += "----------------------\n"
+	return s
 }
 
-// Prints the given lexer records to the console and to an output file
+// Logs the given lexer records to the console and to an output file
 // whos path depends on the Rat23F input file.
-func printRecords(records []record) {
+func logRecords(records []record) {
 	// Print to console
-	fmt.Println("----------------------")
-	fmt.Println("[Token]\t:\t[Lexeme]")
-	for _, r := range records {
-		printRecord(r)
-	}
-	fmt.Println("----------------------")
+	recordsReport := recordsToString(records)
+	fmt.Println(recordsReport)
 
-	// Create output
-	outputPath := inputFileName + ".out"
+	// Create output file
+	outputPath := inputFilePath + ".out"
 	f, err := os.Create(outputPath)
 	check(err)
-
 	defer f.Close()
-
-	f.WriteString("[Token]\t:\t[Lexeme]\n")
-	for _, r := range records {
-		var s = fmt.Sprint(r.tokenType) + "\t:\t" + r.lexeme + "\n"
-		f.WriteString(s)
-	}
+	f.WriteString(recordsReport)
 	fmt.Printf("Wrote output to: %s\n", outputPath)
 }
 
@@ -454,17 +451,17 @@ func main() {
 		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
 		return
 	}
-	inputFileName = os.Args[1]
-	if len(inputFileName) < 1 {
+	inputFilePath = os.Args[1]
+	if len(inputFilePath) < 1 {
 		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
 		return
 	}
 	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
-	readInSourceCode(inputFileName)
+	readInSourceCode(inputFilePath)
 	var records, err = lexer(sourceCode)
 	if err != nil {
 		fmt.Println("The lexer encountered an error.")
 	} else {
-		printRecords(records)
+		logRecords(records)
 	}
 }
