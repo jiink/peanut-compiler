@@ -246,7 +246,7 @@ func logRecords(records []record) {
 	fmt.Println(recordsReport)
 
 	// Create output file
-	outputPath := inputFilePath + ".out"
+	outputPath := inputFilePath + ".lex"
 	f, err := os.Create(outputPath)
 	check(err)
 	defer f.Close()
