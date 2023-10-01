@@ -359,7 +359,7 @@ func lexer(sourceCode string) ([]record, error) {
 			{3, 4}, // 3
 			{3, 4}, // 4
 		},
-		acceptingStates: []int{2, 3, 4},
+		acceptingStates: []int{2, 3},
 		initialState:    1,
 	} // FSM for identifiers
 
@@ -440,7 +440,10 @@ func lexer(sourceCode string) ([]record, error) {
 			}
 			records = append(records, record{tokenType: tokenType, lexeme: lexeme})
 		} else {
-			logDebug("Rejected.\n")
+			lexeme := sourceCode[lexemeStartIndex : sourceCodePointer-1]
+			if strings.TrimSpace(lexeme) != "" {
+				fmt.Printf("ERROR: Unrecognized token \"%s\".\n", lexeme)
+			}
 		}
 	}
 	return records, nil
