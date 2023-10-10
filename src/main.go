@@ -1,0 +1,49 @@
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+/* ---- Helpers --------------------------------------- */
+
+// Prints a debug message to the console if debugEnabled is true.
+func logDebug(format string, args ...interface{}) {
+	if debugEnabled {
+		fmt.Printf("[DEBUG] "+format, args...)
+	}
+}
+
+/* ---- Main ------------------------------------------ */
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		return
+	}
+	inputFilePath = os.Args[1]
+	if len(inputFilePath) < 1 {
+		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		return
+	}
+	fmt.Println("Welcome to the Peanut Compiler for Rat23F!")
+	readInSourceCode(inputFilePath)
+
+	fmt.Println("Beginning lexical analysis...")
+	var records, err = lexer(sourceCode)
+	if err != nil {
+		fmt.Println("The lexer encountered an error.")
+	} else {
+		logRecords(records)
+	}
+	fmt.Println("Lexical analysis complete.")
+
+	fmt.Println("Beginning syntax analysis...")
+	err = syntaxAnalyzer(records)
+	if err != nil {
+		fmt.Println("The syntax analyzer encountered an error.")
+	}
+	fmt.Println("Syntax analysis complete.")
+
+	fmt.Println("This is the end of the compiler so far.")
+}

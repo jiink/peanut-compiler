@@ -96,15 +96,6 @@ var sourceCode = ""
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
 
-/* ---- Helpers --------------------------------------- */
-
-// Prints a debug message to the console if debugEnabled is true.
-func logDebug(format string, args ...interface{}) {
-	if debugEnabled {
-		fmt.Printf("[DEBUG] "+format, args...)
-	}
-}
-
 // Returns a string representation of the given tokenType.
 func (e tokenType) String() string {
 	switch e {
@@ -444,24 +435,4 @@ func lexer(sourceCode string) ([]record, error) {
 		}
 	}
 	return records, nil
-}
-
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
-		return
-	}
-	inputFilePath = os.Args[1]
-	if len(inputFilePath) < 1 {
-		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
-		return
-	}
-	fmt.Println("Welcome to the Peanut Lexer for Rat23F!")
-	readInSourceCode(inputFilePath)
-	var records, err = lexer(sourceCode)
-	if err != nil {
-		fmt.Println("The lexer encountered an error.")
-	} else {
-		logRecords(records)
-	}
 }
