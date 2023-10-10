@@ -6,7 +6,7 @@ It's called the Peanut Compiler because both rats and gophers can eat peanuts.
 
 ## Current state
 
-Assignment 1 - create a lexer
+Assignment 1 - create a syntax analyzer
 
 ## Quick start development
 
@@ -14,10 +14,12 @@ Assignment 1 - create a lexer
 
 1. Download and install Go from https://go.dev/dl/
 1. Clone the repository
-1. Edit code (the _.go_ files) in [src\lexer](src/lexer)
+1. Edit code (the _.go_ files) in src\
 1. Use the command `go run` to run the .go file.
 
 ### Building an exe
+
+#### Lexer
 
 1. In the command prompt, navigate to the directory _lexer.go_ is in.
 1. Run `go build lexer.go`
