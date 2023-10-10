@@ -2,8 +2,18 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
+
+//---- Variables ------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
+
+var inputFilePath = ""
+var sourceCode = ""
+
+//---- Functions ------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
 
 /* ---- Helpers --------------------------------------- */
 
@@ -12,6 +22,24 @@ func logDebug(format string, args ...interface{}) {
 	if debugEnabled {
 		fmt.Printf("[DEBUG] "+format, args...)
 	}
+}
+
+// Reads in the Rat23F source code from the given path and
+// stores it in the global variable `sourceCode`.
+func readInSourceCode(path string) {
+	sourceCodePath := path
+	file, err := os.Open(sourceCodePath)
+	check(err)
+	defer file.Close()
+
+	// To make things simple we'll just put it all in a string.
+	content, err := io.ReadAll(file)
+	check(err)
+	sourceCode = string(content)
+	logDebug("Source code: %s\n", sourceCode)
+	sourceCode = removeComments(sourceCode)
+	sourceCode = trimWhiteSpace(sourceCode)
+	fmt.Printf("Opened file: %s\n", sourceCodePath)
 }
 
 /* ---- Main ------------------------------------------ */

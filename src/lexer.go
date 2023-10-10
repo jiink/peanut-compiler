@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"slices"
@@ -86,12 +85,6 @@ type FSM struct {
 	initialState    int
 	currentState    int
 }
-
-//---- Variables ------------------------------------------------------------------------
-/////////////////////////////////////////////////////////////////////////////////////////
-
-var inputFilePath = ""
-var sourceCode = ""
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -304,24 +297,6 @@ func (f *FSM) run(sourceCodePointer *int) bool {
 	}
 	logDebug("Final state: %d\n", f.currentState)
 	return f.isInAcceptingState()
-}
-
-// Reads in the Rat23F source code from the given path and
-// stores it in the global variable `sourceCode`.
-func readInSourceCode(path string) {
-	sourceCodePath := path
-	file, err := os.Open(sourceCodePath)
-	check(err)
-	defer file.Close()
-
-	// To make things simple we'll just put it all in a string.
-	content, err := io.ReadAll(file)
-	check(err)
-	sourceCode = string(content)
-	logDebug("Source code: %s\n", sourceCode)
-	sourceCode = removeComments(sourceCode)
-	sourceCode = trimWhiteSpace(sourceCode)
-	fmt.Printf("Opened file: %s\n", sourceCodePath)
 }
 
 // Runs the lexer on the given Rat23F source code.
