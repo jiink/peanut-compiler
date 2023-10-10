@@ -6,7 +6,7 @@ It's called the Peanut Compiler because both rats and gophers can eat peanuts.
 
 ## Current state
 
-Assignment 1 - create a syntax analyzer
+Assignment 2 - create a syntax analyzer
 
 ## Quick start development
 
