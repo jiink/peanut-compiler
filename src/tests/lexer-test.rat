@@ -1,0 +1,27 @@
+[* operator *]
+= != > < <= => + - * / ==
++-
+
+[* separator *]
+# { } ; , ( ) =
+#)(
+
+[* keyword *]
+integer bool if ret while else endif get true false real put
+
+[* integer *]
+1 1000 99 00000000000000
+
+[* real *]
+234.567 9.000001 000.00
+
+[* identifier *]
+zZZZ Zzzz a1z4r abcde12345x
+
+[* wrongTokens *]
+    $
+    _
+    asd12
+    23rty
+    000.
+    .123
