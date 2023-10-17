@@ -13,13 +13,10 @@ Identifier  : n
 Operator    : ==
 Integer     : 0
 Separator   : )
-Separator   : {
 Keyword     : ret
 Integer     : 1
 Separator   : ;
-Separator   : }
 Keyword     : else
-Separator   : {
 Keyword     : ret
 Identifier  : n
 Operator    : *
@@ -30,7 +27,7 @@ Operator    : -
 Integer     : 1
 Separator   : )
 Separator   : ;
-Separator   : }
+Keyword     : endif
 Separator   : }
 Separator   : #
 Keyword     : integer

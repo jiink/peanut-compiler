@@ -3,13 +3,10 @@
 function factorial(n integer)
 {
     if (n == 0)
-    {
         ret 1;  [* Base case: factorial of 0 is 1 *]
-    }
     else
-    {
         ret n * factorial(n - 1);  [* Recursive case: n! = n * (n-1)! *]
-    }
+    endif
 }
 
 #

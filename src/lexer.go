@@ -65,7 +65,7 @@ var operators = []string{
 	"==",
 	"!=",
 	"<=",
-	">=",
+	"=>",
 }
 var separators = []string{
 	"(",
@@ -356,6 +356,7 @@ func lexer(sourceCode string) ([]record, error) {
 		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
 		currentChar := readCharSourceCode(&sourceCodePointer)
+		logDebug("new loop with '%c'\n", currentChar)
 
 		if isLetter(currentChar) {
 			// Identifiers start with a letter.
@@ -375,25 +376,23 @@ func lexer(sourceCode string) ([]record, error) {
 				}
 			}
 		} else {
-			// See if it's a separator, if not, see if it's an operator.
-			if isSeparator(string(currentChar)) {
-				tokenType = Separator
+			// Check for a 2-char operator. If not, back up and check for a 1-char operator, then separator.
+			nextChar := readCharSourceCode(&sourceCodePointer) // Peek at next character for 2-char operators (e.g. ==)
+			logDebug("next char: '%c'\n", nextChar)
+			if isOperator(string(currentChar) + string(nextChar)) {
+				tokenType = Operator
 				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
 			} else if isOperator(string(currentChar)) {
 				tokenType = Operator
-				nextChar := readCharSourceCode(&sourceCodePointer) // Peek at next character for 2-char operators (e.g. ==)
-				if isOperator(string(currentChar) + string(nextChar)) {
-					_ = readCharSourceCode(&sourceCodePointer) // Backs up later
-				}
+			} else if isSeparator(string(currentChar)) {
+				tokenType = Separator
 			} else {
-				// Man, we must not know WHAT this is!
-				logDebug("Unhandled character '%c'\n", currentChar)
 				tokenType = Unrecognized
+				logDebug("Unhandled character '%c'\n", currentChar)
 			}
 		}
-
+		backUp(&sourceCodePointer)
 		if tokenType != Unrecognized {
-			backUp(&sourceCodePointer)
 			lexemeEndIndex := sourceCodePointer
 			lexeme := sourceCode[lexemeStartIndex:lexemeEndIndex]
 			logDebug("\"%s\" Accepted!\n", lexeme)
@@ -406,6 +405,7 @@ func lexer(sourceCode string) ([]record, error) {
 			lexeme := sourceCode[lexemeStartIndex : sourceCodePointer-1]
 			if strings.TrimSpace(lexeme) != "" {
 				fmt.Printf("ERROR: Unrecognized token \"%s\".\n", lexeme)
+				records = append(records, record{tokenType: tokenType, lexeme: lexeme})
 			}
 		}
 	}
