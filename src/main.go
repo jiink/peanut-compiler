@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -46,13 +47,23 @@ func readInSourceCode(path string) {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		fmt.Println(">>>> Please provide the path to a Rat23F source code file as an argument.")
+		fmt.Print("Press 'Enter' to quit...")
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		return
 	}
 	inputFilePath = os.Args[1]
 	if len(inputFilePath) < 1 {
-		fmt.Println("Please provide the path to a Rat23F source code file as an argument.")
+		fmt.Println(">>>> Please provide the path to a Rat23F source code file as an argument.")
+		fmt.Print("Press 'Enter' to quit...")
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		return
+	}
+
+	if len(os.Args) > 2 {
+		if os.Args[2] == "-d" {
+			debugEnabled = true
+		}
 	}
 	fmt.Println("Welcome to the Peanut Compiler for Rat23F!")
 	readInSourceCode(inputFilePath)
