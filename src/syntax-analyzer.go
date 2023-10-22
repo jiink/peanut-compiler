@@ -4,6 +4,7 @@ package main
 /////////////////////////////////////////////////////////////////////////////////////////
 
 var records []record
+var currentToken string
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +19,11 @@ func getNextRecord() record {
 }
 
 /* ---- Productions ----------------------------------- */
+
+func rulePrimary() {
+	logDebug("<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false")
+	// Too hard!
+}
 
 /* ---- The main attraction --------------------------- */
 
