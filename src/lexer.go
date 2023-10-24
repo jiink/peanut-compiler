@@ -72,7 +72,6 @@ var separators = []string{
 	")",
 	"{",
 	"}",
-	".",
 	",",
 	";",
 	"#",
@@ -315,7 +314,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmIdentifier := FSM{
 		inputSymbolSet: []symbolType{Letter, Digit},
 		transitionTable: [][]int{
-			// l  d
+		// l  d
 			{0, 0}, // 0
 			{2, 0}, // 1
 			{3, 4}, // 2
@@ -329,7 +328,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmReal := FSM{
 		inputSymbolSet: []symbolType{Digit, Period},
 		transitionTable: [][]int{
-			// d, p
+		// d, p
 			{0, 0}, // 0
 			{2, 0}, // 1
 			{2, 3}, // 2
@@ -343,7 +342,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmInteger := FSM{
 		inputSymbolSet: []symbolType{Digit},
 		transitionTable: [][]int{
-			// d
+		// d
 			{0}, // 0
 			{2}, // 1
 			{2}, // 2
@@ -369,12 +368,12 @@ func lexer(sourceCode string) ([]record, error) {
 			sourceCodePointerBookmark := sourceCodePointer
 			if fsmReal.run(&sourceCodePointer) {
 				tokenType = Real
-			} else {
-				sourceCodePointer = sourceCodePointerBookmark
-				if fsmInteger.run(&sourceCodePointer) {
-					tokenType = Integer
+				} else {
+					sourceCodePointer = sourceCodePointerBookmark
+					if fsmInteger.run(&sourceCodePointer) {
+						tokenType = Integer
+					}
 				}
-			}
 		} else {
 			// Check for a 2-char operator. If not, back up and check for a 1-char operator, then separator.
 			nextChar := readCharSourceCode(&sourceCodePointer) // Peek at next character for 2-char operators (e.g. ==)
@@ -402,7 +401,7 @@ func lexer(sourceCode string) ([]record, error) {
 			}
 			records = append(records, record{tokenType: tokenType, lexeme: lexeme})
 		} else {
-			lexeme := sourceCode[lexemeStartIndex : sourceCodePointer-1]
+			lexeme := sourceCode[lexemeStartIndex : sourceCodePointer]
 			if strings.TrimSpace(lexeme) != "" {
 				fmt.Printf("ERROR: Unrecognized token \"%s\".\n", lexeme)
 				records = append(records, record{tokenType: tokenType, lexeme: lexeme})
