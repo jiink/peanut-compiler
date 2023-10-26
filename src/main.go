@@ -18,6 +18,12 @@ var sourceCode = ""
 
 /* ---- Helpers --------------------------------------- */
 
+// Terminates the program.
+func exit() {
+	fmt.Println("Exiting...")
+	os.Exit(1)
+}
+
 // Prints a debug message to the console if debugEnabled is true.
 func logDebug(format string, args ...interface{}) {
 	if debugEnabled {
