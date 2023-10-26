@@ -167,6 +167,11 @@ func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
+// Returns true if the given rune is a period.
+func isPeriod(r rune) bool {
+	return r == '.'
+}
+
 // Returns the symbolType associated with the given rune.
 // This symbol type can be given to a finite state machine.
 func charToSymbolType(r rune) symbolType {
@@ -176,7 +181,7 @@ func charToSymbolType(r rune) symbolType {
 	if isDigit(r) {
 		return Digit
 	}
-	if r == '.' {
+	if isPeriod(r) {
 		return Period
 	}
 	return Special
@@ -326,26 +331,28 @@ func lexer(sourceCode string) ([]record, error) {
 	} // FSM for identifiers
 
 	fsmReal := FSM{
-		inputSymbolSet: []symbolType{Digit, Period},
+		inputSymbolSet: []symbolType{Digit, Period, Letter},
 		transitionTable: [][]int{
-		// d, p
-			{0, 0}, // 0
-			{2, 0}, // 1
-			{2, 3}, // 2
-			{4, 0}, // 3
-			{4, 0}, // 4
+		// d, p, l
+			{0, 0, 0}, // 0
+			{2, 0, 0}, // 1
+			{2, 3, 5}, // 2
+			{4, 0, 5}, // 3
+			{4, 0, 5}, // 4
+			{5, 5, 5}, // 5, ensures that incorrect tokens are fully read instead of split
 		},
 		acceptingStates: []int{4},
 		initialState:    1,
 	} // FSM for reals
 
 	fsmInteger := FSM{
-		inputSymbolSet: []symbolType{Digit},
+		inputSymbolSet: []symbolType{Digit, Period, Letter},
 		transitionTable: [][]int{
-		// d
-			{0}, // 0
-			{2}, // 1
-			{2}, // 2
+		// d, p, l
+			{0, 0, 0}, // 0
+			{2, 0, 0}, // 1
+			{2, 3, 3}, // 2
+			{3, 3, 3}, // 3, ensures that incorrect tokens are fully read instead of split
 		},
 		acceptingStates: []int{2},
 		initialState:    1,
@@ -385,6 +392,9 @@ func lexer(sourceCode string) ([]record, error) {
 				tokenType = Operator
 			} else if isSeparator(string(currentChar)) {
 				tokenType = Separator
+			} else if isPeriod(currentChar) {
+				fsmInteger.run(&sourceCodePointer) // checks for tokens like ".123"
+					tokenType = Unrecognized
 			} else {
 				tokenType = Unrecognized
 				logDebug("Unhandled character '%c'\n", currentChar)
