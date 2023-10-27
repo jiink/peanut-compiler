@@ -128,6 +128,11 @@ func prodParameter() {
 
 func prodQualifier() {
 	logDebug("<Qualifier> ::= integer | bool | real\n")
+	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
+		nextRecord() 
+	} else {
+	syntaxError("'bool', 'real', or 'integer' expected") 
+	}
 }
 
 func prodBody() {
@@ -136,58 +141,159 @@ func prodBody() {
 
 func prodOptDeclarationList() {
 	logDebug("<Opt Declaration List> ::= <Declaration List> | <Empty>\n")
+	prodDeclarationList()
 }
 
 func prodDeclarationList() {
 	logDebug("<Declaration List> ::= <Declaration> ; <Declaration List Continued>\n")
+	prodDeclaration()
+	if currentRecord.lexeme == ";" {
+		prodDeclarationListContinued()
+		nextRecord()
+	} else {
+	syntaxError("';' expected")
+	}
 }
 
 func prodDeclarationListContinued() {
 	logDebug("<Declaration List Continued> ::= <Empty> | <Declaration List>\n")
+	if currentRecord.tokenType == Identifier {
+	prodDeclarationList()
+	}
 }
 
 func prodDeclaration() {
 	logDebug("<Declaration> ::= <Qualifier > <IDs>\n")
+	prodQualifier()
+	prodIDs()
 }
 
 func prodIDs() {
 	logDebug("<IDs> ::= <Identifier> <IDs Continued>\n")
+	if currentRecord.tokenType == Identifier {
+		nextRecord()
+		prodIDsContinued()
+	} else {
+		syntaxError("Identifier Expected")
+	}
 }
 
 func prodIDsContinued() {
 	logDebug("<IDs Continued> ::= <Empty> | , <IDs>\n")
+	if currentRecord.lexeme == "," {
+	prodIDs()
+	nextRecord()
+	}
 }
 
 func prodStatementList() {
 	logDebug("<Statement List> ::= <Statement> <Statement List Continued>\n")
+	prodStatementListContinued()
+	prodStatement()
 }
 
 func prodStatementListContinued() {
 	logDebug("<Statement List Continued> ::= <Empty> | <Statement List>\n")
+	if currentRecord.tokenType == Identifier {
+	prodStatementList()
+	}
 }
 
 func prodStatement() {
 	logDebug("<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>\n")
+	if currentRecord.lexeme == "{" {
+	prodCompound()
+	} else if currentRecord.lexeme == "if" {
+	prodIf()
+	} else if currentRecord.lexeme == "return" {
+	prodReturn()
+	} else if currentRecord.lexeme == "print" {
+	prodPrint()
+	} else if currentRecord.lexeme == "input" {
+	prodScan()
+	} else if currentRecord.lexeme == "while" {
+	prodWhile()
+	} else if currentRecord.tokenType == Identifier {
+	prodAssign()
+	} else {
+	syntaxError("Not valid")
+	}
 }
 
 func prodCompound() {
 	logDebug("<Compound> ::= { <Statement List> }\n")
+	if currentRecord.lexeme == "{" {
+		prodStatementList()
+		nextRecord()
+	if currentRecord.lexeme == "}" {
+		nextRecord()
+		} else {
+		syntaxError("'}' Expected")
+		}
+	} else {
+	syntaxError("'{' Expected")
+	}
 }
 
 func prodAssign() {
 	logDebug("<Assign> ::= <Identifier> = <Expression> ;\n")
+	if currentRecord.tokenType == Identifier {
+	nextRecord()
+	if currentRecord.lexeme == "=" {
+	nextRecord()
+	prodExpression()
+	if currentRecord.lexeme == ";" {
+	nextRecord()
+	} else {
+	syntaxError("'=' Exptected")
+	}
+	} else {
+	syntaxError("An Identifier Expected")
+	}
 }
 
 func prodIf() {
 	logDebug("<If> ::= if ( <Condition> ) <Statement> <If Continued>\n")
+	if currentRecord.lexeme == "if" {
+	nextRecord()
+	if currentRecord.lexeme == ")" {
+	prodCondition()
+	nextRecord()
+	if currentRecord.lexeme -- "(" {
+	prodIfContinued()
+	nextRecord()
+	prodStatement()
+	} else { 
+	syntaxError("'if' Expected")
+	}
+	} else {
+	syntaxError("'(' Expected")
+	}
+	} else {
+	syntaxError("')' Expected")
+	}
 }
 
 func prodIfContinued() {
 	logDebug("<If Continued> ::= endif | else <Statement> endif\n")
+	if currentRecord.lexeme == "endif" {
+	nextRecord()
+	} else if currentRecord.lexeme == "else" {
+	prodStatement()
+	nextRecord()
+	if currentRecord.lexeme == "endif" {
+	nextRecord()
+	} else {
+	syntaxError("'endif' Expected")
+	}
+	} else {
+	syntaxError("'else' or 'endif' Expected")
+	}
 }
 
 func prodReturn() {
 	logDebug("<Return> ::= ret <Return Continued> \n")
+	
 }
 
 func prodReturnContinued() {
