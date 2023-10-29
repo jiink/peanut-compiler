@@ -60,7 +60,9 @@ func prodRat23F() {
 
 func prodOptFunctionDefinitions() {
 	logDebug("<Opt Function Definitions> ::= <Function Definitions> | <Empty>\n")
-	prodFunctionDefinitions()
+	if currentRecord.lexeme == "function" {
+		prodFunctionDefinitions()
+	}
 }
 
 func prodFunctionDefinitions() {
@@ -71,7 +73,9 @@ func prodFunctionDefinitions() {
 
 func prodFunctionDefinitionsContinued() {
 	logDebug("<Function Definitions Continued> ::= <Empty> | <Function Definitions>\n")
-	prodFunctionDefinitions()
+	if currentRecord.lexeme == "function" {
+		prodFunctionDefinitions()
+	}
 }
 
 func prodFunction() {
@@ -103,7 +107,9 @@ func prodFunction() {
 
 func prodOptParameterList() {
 	logDebug("<Opt Parameter List> ::= <Parameter List> | <Empty>\n")
-	prodParameterList()
+	if currentRecord.tokenType == Identifier {
+		prodParameterList()
+	}
 }
 
 func prodParameterList() {
@@ -152,7 +158,9 @@ func prodBody() {
 
 func prodOptDeclarationList() {
 	logDebug("<Opt Declaration List> ::= <Declaration List> | <Empty>\n")
-	prodDeclarationList()
+	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
+		prodDeclarationList()
+	}
 }
 
 func prodDeclarationList() {
@@ -168,8 +176,7 @@ func prodDeclarationList() {
 
 func prodDeclarationListContinued() {
 	logDebug("<Declaration List Continued> ::= <Empty> | <Declaration List>\n")
-	if currentRecord.tokenType == Identifier {
-		nextRecord()
+	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
 		prodDeclarationList()
 	}
 }
@@ -200,15 +207,19 @@ func prodIDsContinued() {
 
 func prodStatementList() {
 	logDebug("<Statement List> ::= <Statement> <Statement List Continued>\n")
-	prodStatementListContinued()
 	prodStatement()
+	prodStatementListContinued()
 }
 
 func prodStatementListContinued() {
 	logDebug("<Statement List Continued> ::= <Empty> | <Statement List>\n")
-	if currentRecord.tokenType == Identifier {
-		nextRecord()
+	switch currentRecord.lexeme {
+	case "{", "if", "ret", "put", "get", "while":
 		prodStatementList()
+	default:
+		if currentRecord.tokenType == Identifier {
+			prodStatementList()
+		}
 	}
 }
 
@@ -216,18 +227,18 @@ func prodStatement() {
 	logDebug("<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>\n")
 	if currentRecord.lexeme == "{" {
 		prodCompound()
+	} else if currentRecord.tokenType == Identifier {
+		prodAssign()
 	} else if currentRecord.lexeme == "if" {
 		prodIf()
 	} else if currentRecord.lexeme == "ret" {
 		prodReturn()
-	} else if currentRecord.lexeme == "print" {
+	} else if currentRecord.lexeme == "put" {
 		prodPrint()
-	} else if currentRecord.lexeme == "input" {
+	} else if currentRecord.lexeme == "get" {
 		prodScan()
 	} else if currentRecord.lexeme == "while" {
 		prodWhile()
-	} else if currentRecord.tokenType == Identifier {
-		prodAssign()
 	} else {
 		syntaxError("Not valid")
 	}
@@ -236,8 +247,8 @@ func prodStatement() {
 func prodCompound() {
 	logDebug("<Compound> ::= { <Statement List> }\n")
 	if currentRecord.lexeme == "{" {
-		prodStatementList()
 		nextRecord()
+		prodStatementList()
 		if currentRecord.lexeme == "}" {
 			nextRecord()
 		} else {
@@ -258,11 +269,13 @@ func prodAssign() {
 			if currentRecord.lexeme == ";" {
 				nextRecord()
 			} else {
-				syntaxError("'=' Expected")
+				syntaxError("';' Expected")
 			}
 		} else {
-			syntaxError("An Identifier Expected")
+			syntaxError("'=' Expected")
 		}
+	} else {
+		syntaxError("Identifier Expected")
 	}
 }
 
@@ -270,21 +283,21 @@ func prodIf() {
 	logDebug("<If> ::= if ( <Condition> ) <Statement> <If Continued>\n")
 	if currentRecord.lexeme == "if" {
 		nextRecord()
-		if currentRecord.lexeme == ")" {
-			prodCondition()
+		if currentRecord.lexeme == "(" {
 			nextRecord()
-			if currentRecord.lexeme == "(" {
-				prodIfContinued()
+			prodCondition()
+			if currentRecord.lexeme == ")" {
 				nextRecord()
 				prodStatement()
+				prodIfContinued()
 			} else {
-				syntaxError("'if' Expected")
+				syntaxError("')' Expected")
 			}
 		} else {
 			syntaxError("'(' Expected")
 		}
 	} else {
-		syntaxError("')' Expected")
+		syntaxError("'if' Expected")
 	}
 }
 
@@ -293,8 +306,8 @@ func prodIfContinued() {
 	if currentRecord.lexeme == "endif" {
 		nextRecord()
 	} else if currentRecord.lexeme == "else" {
-		prodStatement()
 		nextRecord()
+		prodStatement()
 		if currentRecord.lexeme == "endif" {
 			nextRecord()
 		} else {
@@ -322,10 +335,15 @@ func prodReturnContinued() {
 		return
 	}
 	prodExpression()
+	if currentRecord.lexeme == ";" {
+		nextRecord()
+	} else {
+		syntaxError("';' Expected")
+	}
 }
 
 func prodPrint() {
-	logDebug("<Print> ::= put ( <Expression>);\n")
+	logDebug("<Print> ::= put ( <Expression> );\n")
 	if currentRecord.lexeme == "put" {
 		nextRecord()
 		if currentRecord.lexeme == "(" {
@@ -420,8 +438,10 @@ func prodExpression() {
 
 func prodExpressionPrime() {
 	logDebug("<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>\n")
-	prodExpressionContinued()
-	prodExpressionPrime()
+	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
+		prodExpressionContinued()
+		prodExpressionPrime()
+	}
 }
 
 func prodExpressionContinued() {
@@ -429,6 +449,8 @@ func prodExpressionContinued() {
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
 		nextRecord()
 		prodTerm()
+	} else {
+		syntaxError("'+' or '-' expected")
 	}
 }
 
@@ -440,8 +462,10 @@ func prodTerm() {
 
 func prodTermPrime() {
 	logDebug("<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>\n")
-	prodTermContinued()
-	prodTermPrime()
+	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
+		prodTermContinued()
+		prodTermPrime()
+	}
 }
 
 func prodTermContinued() {
@@ -449,6 +473,8 @@ func prodTermContinued() {
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
 		nextRecord()
 		prodFactor()
+	} else {
+		syntaxError("'*' or '/' expected")
 	}
 }
 
