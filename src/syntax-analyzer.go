@@ -159,16 +159,17 @@ func prodDeclarationList() {
 	logDebug("<Declaration List> ::= <Declaration> ; <Declaration List Continued>\n")
 	prodDeclaration()
 	if currentRecord.lexeme == ";" {
-		prodDeclarationListContinued()
 		nextRecord()
+		prodDeclarationListContinued()
 	} else {
-	syntaxError("';' expected")
+		syntaxError("';' expected")
 	}
 }
 
 func prodDeclarationListContinued() {
 	logDebug("<Declaration List Continued> ::= <Empty> | <Declaration List>\n")
 	if currentRecord.tokenType == Identifier {
+		nextRecord()
 		prodDeclarationList()
 	}
 }
@@ -192,8 +193,8 @@ func prodIDs() {
 func prodIDsContinued() {
 	logDebug("<IDs Continued> ::= <Empty> | , <IDs>\n")
 	if currentRecord.lexeme == "," {
-		prodIDs()
 		nextRecord()
+		prodIDs()
 	}
 }
 
@@ -206,6 +207,7 @@ func prodStatementList() {
 func prodStatementListContinued() {
 	logDebug("<Statement List Continued> ::= <Empty> | <Statement List>\n")
 	if currentRecord.tokenType == Identifier {
+		nextRecord()
 		prodStatementList()
 	}
 }
@@ -216,7 +218,7 @@ func prodStatement() {
 		prodCompound()
 	} else if currentRecord.lexeme == "if" {
 		prodIf()
-	} else if currentRecord.lexeme == "return" {
+	} else if currentRecord.lexeme == "ret" {
 		prodReturn()
 	} else if currentRecord.lexeme == "print" {
 		prodPrint()
@@ -236,10 +238,10 @@ func prodCompound() {
 	if currentRecord.lexeme == "{" {
 		prodStatementList()
 		nextRecord()
-	if currentRecord.lexeme == "}" {
-		nextRecord()
+		if currentRecord.lexeme == "}" {
+			nextRecord()
 		} else {
-		syntaxError("'}' Expected")
+			syntaxError("'}' Expected")
 		}
 	} else {
 		syntaxError("'{' Expected")
@@ -403,11 +405,11 @@ func prodCondition() {
 func prodRelop() {
 	logDebug("<Relop> ::= == | != | > | < | <= | =>\n")
 	switch currentRecord.lexeme {
-		case "==", "!=", ">", "<", "<=", "=>":
-			nextRecord()
-		default:
-			syntaxError("'==', '!=', '>', '<', '<=', or '=>' expected")
-		}
+	case "==", "!=", ">", "<", "<=", "=>":
+		nextRecord()
+	default:
+		syntaxError("'==', '!=', '>', '<', '<=', or '=>' expected")
+	}
 }
 
 func prodExpression() {
