@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 //---- Definitions ----------------------------------------------------------------------
@@ -18,7 +19,9 @@ var noDebugLogArgumentShort = "s"
 
 var inputFilePath = ""
 var sourceCode = ""
-var debugEnabled = true // Enables/disables debug log messages
+var debugEnabled = true          // Enables/disables debug log messages in the console
+var debugLogToFileEnabled = true // Enables/disables debug log messages being written to a file
+var logFile *os.File
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -48,10 +51,35 @@ func showUsage() {
 	fmt.Printf("\t-%s, --%s\t\tSilence debug messages such as lexer state machine statuses and syntax analysis production trees.\n", noDebugLogArgumentShort, noDebugLogArgument)
 }
 
-// Prints a debug message to the console if debugEnabled is true.
+func createLogFile() {
+	outputPath := inputFilePath
+	// Remove everything after the dot (including the dot itself)
+	dotIndex := strings.Index(outputPath, ".")
+	if dotIndex != -1 {
+		result := outputPath[:dotIndex]
+		fmt.Println("Result:", result)
+	}
+	outputPath += "-out.txt"
+	f, err := os.Create(outputPath)
+	check(err)
+	logFile = f
+}
+
+// Prints a debug message to the console and/or a file
 func logDebug(format string, args ...interface{}) {
 	if debugEnabled {
 		fmt.Printf("[DEBUG] "+format, args...)
+	}
+	if debugLogToFileEnabled && (logFile != nil) {
+		logFile.WriteString(fmt.Sprintf(format, args...))
+	}
+}
+
+// Prints a message to the console and/or a file
+func log(format string, args ...interface{}) {
+	fmt.Printf(format, args...)
+	if debugLogToFileEnabled && (logFile != nil) {
+		logFile.WriteString(fmt.Sprintf(format, args...))
 	}
 }
 
@@ -93,23 +121,34 @@ func main() {
 	fmt.Println("Welcome to the Peanut Compiler for Rat23F!")
 	readInSourceCode(inputFilePath)
 
+	if debugLogToFileEnabled {
+		createLogFile()
+	}
+
 	enableDebugSoon := debugEnabled
 	debugEnabled = false // Silence debug messages just for the lexer
+	enableDebugLogToFileSoon := debugLogToFileEnabled
+	debugLogToFileEnabled = false
 	//fmt.Println("Beginning lexical analysis...")
 	var records, err = lexer(sourceCode)
 	if err != nil {
-		fmt.Println("The lexer encountered an error.")
+		log("The lexer encountered an error.")
 	} else {
-		logRecords(records, false)
+		logRecords(records, false, false)
 	}
 	//fmt.Println("Lexical analysis complete.")
 
 	//fmt.Println("Beginning syntax analysis...")
 	debugEnabled = enableDebugSoon
+	debugLogToFileEnabled = enableDebugLogToFileSoon
 	err = syntaxAnalyzer(records)
 	if err != nil {
-		fmt.Println("The syntax analyzer encountered an error.")
+		log("The syntax analyzer encountered an error.\n")
+	} else {
+		log("The code is syntactically correct!\n")
 	}
-	fmt.Println("Syntax analysis complete.")
 	fmt.Println("This is the end of the compiler so far.")
+	if logFile != nil {
+		logFile.Close()
+	}
 }

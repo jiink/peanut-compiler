@@ -18,7 +18,7 @@ var currentRecord record
 func syntaxError(format string, args ...interface{}) {
 	errorInfo := fmt.Sprintf("Line %d: Unexpected token \"%s\" | ", currentRecord.lineNumber, currentRecord.lexeme)
 	errorMessagePrefix := fmt.Sprintf("[ERROR] %s ", errorInfo)
-	fmt.Printf(errorMessagePrefix+format+"\n", args...)
+	log(errorMessagePrefix+format+"\n", args...)
 	promptExit()
 }
 
@@ -29,9 +29,9 @@ func nextRecord() record {
 	if len(records) > 0 {
 		record = records[0]
 		records = records[1:]
-		fmt.Printf("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
+		logDebug("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
 	} else {
-		fmt.Println("Reached end of file.")
+		logDebug("Reached end of file.\n\n")
 	}
 	currentRecord = record
 	return record
@@ -40,7 +40,7 @@ func nextRecord() record {
 /* ---- Productions ("prods") ------------------------- */
 
 func prodRat23F() {
-	logDebug("<Rat23F> ::= <Opt Function Definitions> # <Opt Declaration List> <Statement List> #\n")
+	logDebug("\t<Rat23F> ::= <Opt Function Definitions> # <Opt Declaration List> <Statement List> #\n")
 	prodOptFunctionDefinitions()
 	if currentRecord.lexeme == "#" {
 		nextRecord()
@@ -60,27 +60,27 @@ func prodRat23F() {
 }
 
 func prodOptFunctionDefinitions() {
-	logDebug("<Opt Function Definitions> ::= <Function Definitions> | <Empty>\n")
+	logDebug("\t<Opt Function Definitions> ::= <Function Definitions> | <Empty>\n")
 	if currentRecord.lexeme == "function" {
 		prodFunctionDefinitions()
 	}
 }
 
 func prodFunctionDefinitions() {
-	logDebug("<Function Definitions> ::= <Function> <Function Definitions Continued>\n")
+	logDebug("\t<Function Definitions> ::= <Function> <Function Definitions Continued>\n")
 	prodFunction()
 	prodFunctionDefinitionsContinued()
 }
 
 func prodFunctionDefinitionsContinued() {
-	logDebug("<Function Definitions Continued> ::= <Empty> | <Function Definitions>\n")
+	logDebug("\t<Function Definitions Continued> ::= <Empty> | <Function Definitions>\n")
 	if currentRecord.lexeme == "function" {
 		prodFunctionDefinitions()
 	}
 }
 
 func prodFunction() {
-	logDebug("<Function> ::= function <Identifier> ( <Opt Parameter List> ) <Opt Declaration List> <Body>\n")
+	logDebug("\t<Function> ::= function <Identifier> ( <Opt Parameter List> ) <Opt Declaration List> <Body>\n")
 	if currentRecord.lexeme == "function" {
 		nextRecord()
 		if currentRecord.tokenType == Identifier {
@@ -107,20 +107,20 @@ func prodFunction() {
 }
 
 func prodOptParameterList() {
-	logDebug("<Opt Parameter List> ::= <Parameter List> | <Empty>\n")
+	logDebug("\t<Opt Parameter List> ::= <Parameter List> | <Empty>\n")
 	if currentRecord.tokenType == Identifier {
 		prodParameterList()
 	}
 }
 
 func prodParameterList() {
-	logDebug("<Parameter List> ::= <Parameter> <Parameter List Continued>\n")
+	logDebug("\t<Parameter List> ::= <Parameter> <Parameter List Continued>\n")
 	prodParameter()
 	prodParameterListContinued()
 }
 
 func prodParameterListContinued() {
-	logDebug("<Parameter List Continued> ::= <Empty> | ,<Parameter List>\n")
+	logDebug("\t<Parameter List Continued> ::= <Empty> | ,<Parameter List>\n")
 	if currentRecord.lexeme == "," {
 		nextRecord()
 		prodParameterList()
@@ -128,13 +128,13 @@ func prodParameterListContinued() {
 }
 
 func prodParameter() {
-	logDebug("<Parameter> ::= <IDs> <Qualifier>\n")
+	logDebug("\t<Parameter> ::= <IDs> <Qualifier>\n")
 	prodIDs()
 	prodQualifier()
 }
 
 func prodQualifier() {
-	logDebug("<Qualifier> ::= integer | bool | real\n")
+	logDebug("\t<Qualifier> ::= integer | bool | real\n")
 	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
 		nextRecord()
 	} else {
@@ -143,7 +143,7 @@ func prodQualifier() {
 }
 
 func prodBody() {
-	logDebug("<Body> ::= { <Statement List> }\n")
+	logDebug("\t<Body> ::= { <Statement List> }\n")
 	if currentRecord.lexeme == "{" {
 		nextRecord()
 		prodStatementList()
@@ -158,14 +158,14 @@ func prodBody() {
 }
 
 func prodOptDeclarationList() {
-	logDebug("<Opt Declaration List> ::= <Declaration List> | <Empty>\n")
+	logDebug("\t<Opt Declaration List> ::= <Declaration List> | <Empty>\n")
 	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
 		prodDeclarationList()
 	}
 }
 
 func prodDeclarationList() {
-	logDebug("<Declaration List> ::= <Declaration> ; <Declaration List Continued>\n")
+	logDebug("\t<Declaration List> ::= <Declaration> ; <Declaration List Continued>\n")
 	prodDeclaration()
 	if currentRecord.lexeme == ";" {
 		nextRecord()
@@ -176,20 +176,20 @@ func prodDeclarationList() {
 }
 
 func prodDeclarationListContinued() {
-	logDebug("<Declaration List Continued> ::= <Empty> | <Declaration List>\n")
+	logDebug("\t<Declaration List Continued> ::= <Empty> | <Declaration List>\n")
 	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
 		prodDeclarationList()
 	}
 }
 
 func prodDeclaration() {
-	logDebug("<Declaration> ::= <Qualifier> <IDs>\n")
+	logDebug("\t<Declaration> ::= <Qualifier> <IDs>\n")
 	prodQualifier()
 	prodIDs()
 }
 
 func prodIDs() {
-	logDebug("<IDs> ::= <Identifier> <IDs Continued>\n")
+	logDebug("\t<IDs> ::= <Identifier> <IDs Continued>\n")
 	if currentRecord.tokenType == Identifier {
 		nextRecord()
 		prodIDsContinued()
@@ -199,7 +199,7 @@ func prodIDs() {
 }
 
 func prodIDsContinued() {
-	logDebug("<IDs Continued> ::= <Empty> | , <IDs>\n")
+	logDebug("\t<IDs Continued> ::= <Empty> | , <IDs>\n")
 	if currentRecord.lexeme == "," {
 		nextRecord()
 		prodIDs()
@@ -207,13 +207,13 @@ func prodIDsContinued() {
 }
 
 func prodStatementList() {
-	logDebug("<Statement List> ::= <Statement> <Statement List Continued>\n")
+	logDebug("\t<Statement List> ::= <Statement> <Statement List Continued>\n")
 	prodStatement()
 	prodStatementListContinued()
 }
 
 func prodStatementListContinued() {
-	logDebug("<Statement List Continued> ::= <Empty> | <Statement List>\n")
+	logDebug("\t<Statement List Continued> ::= <Empty> | <Statement List>\n")
 	switch currentRecord.lexeme {
 	case "{", "if", "ret", "put", "get", "while":
 		prodStatementList()
@@ -225,7 +225,7 @@ func prodStatementListContinued() {
 }
 
 func prodStatement() {
-	logDebug("<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>\n")
+	logDebug("\t<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>\n")
 	if currentRecord.lexeme == "{" {
 		prodCompound()
 	} else if currentRecord.tokenType == Identifier {
@@ -246,7 +246,7 @@ func prodStatement() {
 }
 
 func prodCompound() {
-	logDebug("<Compound> ::= { <Statement List> }\n")
+	logDebug("\t<Compound> ::= { <Statement List> }\n")
 	if currentRecord.lexeme == "{" {
 		nextRecord()
 		prodStatementList()
@@ -261,7 +261,7 @@ func prodCompound() {
 }
 
 func prodAssign() {
-	logDebug("<Assign> ::= <Identifier> = <Expression> ;\n")
+	logDebug("\t<Assign> ::= <Identifier> = <Expression> ;\n")
 	if currentRecord.tokenType == Identifier {
 		nextRecord()
 		if currentRecord.lexeme == "=" {
@@ -281,7 +281,7 @@ func prodAssign() {
 }
 
 func prodIf() {
-	logDebug("<If> ::= if ( <Condition> ) <Statement> <If Continued>\n")
+	logDebug("\t<If> ::= if ( <Condition> ) <Statement> <If Continued>\n")
 	if currentRecord.lexeme == "if" {
 		nextRecord()
 		if currentRecord.lexeme == "(" {
@@ -303,7 +303,7 @@ func prodIf() {
 }
 
 func prodIfContinued() {
-	logDebug("<If Continued> ::= endif | else <Statement> endif\n")
+	logDebug("\t<If Continued> ::= endif | else <Statement> endif\n")
 	if currentRecord.lexeme == "endif" {
 		nextRecord()
 	} else if currentRecord.lexeme == "else" {
@@ -320,7 +320,7 @@ func prodIfContinued() {
 }
 
 func prodReturn() {
-	logDebug("<Return> ::= ret <Return Continued> \n")
+	logDebug("\t<Return> ::= ret <Return Continued> \n")
 	if currentRecord.lexeme == "ret" {
 		nextRecord()
 		prodReturnContinued()
@@ -330,7 +330,7 @@ func prodReturn() {
 }
 
 func prodReturnContinued() {
-	logDebug("<Return Continued> ::= ; | <Expression> ;\n")
+	logDebug("\t<Return Continued> ::= ; | <Expression> ;\n")
 	if currentRecord.lexeme == ";" {
 		nextRecord()
 		return
@@ -344,7 +344,7 @@ func prodReturnContinued() {
 }
 
 func prodPrint() {
-	logDebug("<Print> ::= put ( <Expression> );\n")
+	logDebug("\t<Print> ::= put ( <Expression> );\n")
 	if currentRecord.lexeme == "put" {
 		nextRecord()
 		if currentRecord.lexeme == "(" {
@@ -369,7 +369,7 @@ func prodPrint() {
 }
 
 func prodScan() {
-	logDebug("<Scan> ::= get ( <IDs> );\n")
+	logDebug("\t<Scan> ::= get ( <IDs> );\n")
 	if currentRecord.lexeme == "get" {
 		nextRecord()
 		if currentRecord.lexeme == "(" {
@@ -394,7 +394,7 @@ func prodScan() {
 }
 
 func prodWhile() {
-	logDebug("<While> ::= while ( <Condition> ) <Statement>\n")
+	logDebug("\t<While> ::= while ( <Condition> ) <Statement>\n")
 	if currentRecord.lexeme == "while" {
 		nextRecord()
 		if currentRecord.lexeme == "(" {
@@ -415,14 +415,14 @@ func prodWhile() {
 }
 
 func prodCondition() {
-	logDebug("<Condition> ::= <Expression> <Relop> <Expression>\n")
+	logDebug("\t<Condition> ::= <Expression> <Relop> <Expression>\n")
 	prodExpression()
 	prodRelop()
 	prodExpression()
 }
 
 func prodRelop() {
-	logDebug("<Relop> ::= == | != | > | < | <= | =>\n")
+	logDebug("\t<Relop> ::= == | != | > | < | <= | =>\n")
 	switch currentRecord.lexeme {
 	case "==", "!=", ">", "<", "<=", "=>":
 		nextRecord()
@@ -432,13 +432,13 @@ func prodRelop() {
 }
 
 func prodExpression() {
-	logDebug("<Expression> ::= <Term> <Expression Prime>\n")
+	logDebug("\t<Expression> ::= <Term> <Expression Prime>\n")
 	prodTerm()
 	prodExpressionPrime()
 }
 
 func prodExpressionPrime() {
-	logDebug("<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>\n")
+	logDebug("\t<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>\n")
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
 		prodExpressionContinued()
 		prodExpressionPrime()
@@ -446,7 +446,7 @@ func prodExpressionPrime() {
 }
 
 func prodExpressionContinued() {
-	logDebug("<Expression Continued> ::= + <Term> | - <Term>\n")
+	logDebug("\t<Expression Continued> ::= + <Term> | - <Term>\n")
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
 		nextRecord()
 		prodTerm()
@@ -456,13 +456,13 @@ func prodExpressionContinued() {
 }
 
 func prodTerm() {
-	logDebug("<Term> ::= <Factor> <Term Prime>\n")
+	logDebug("\t<Term> ::= <Factor> <Term Prime>\n")
 	prodFactor()
 	prodTermPrime()
 }
 
 func prodTermPrime() {
-	logDebug("<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>\n")
+	logDebug("\t<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>\n")
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
 		prodTermContinued()
 		prodTermPrime()
@@ -470,7 +470,7 @@ func prodTermPrime() {
 }
 
 func prodTermContinued() {
-	logDebug("<Term Continued> ::= * <Factor> | / <Factor>\n")
+	logDebug("\t<Term Continued> ::= * <Factor> | / <Factor>\n")
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
 		nextRecord()
 		prodFactor()
@@ -480,7 +480,7 @@ func prodTermContinued() {
 }
 
 func prodFactor() {
-	logDebug("<Factor> ::= - <Primary> | <Primary>\n")
+	logDebug("\t<Factor> ::= - <Primary> | <Primary>\n")
 	if currentRecord.lexeme == "-" {
 		nextRecord()
 		prodPrimary()
@@ -490,7 +490,7 @@ func prodFactor() {
 }
 
 func prodPrimary() {
-	logDebug("<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false\n")
+	logDebug("\t<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false\n")
 	if currentRecord.tokenType == Identifier {
 		nextRecord()
 		prodPrimaryContinued()
@@ -526,7 +526,7 @@ func prodPrimary() {
 }
 
 func prodPrimaryContinued() {
-	logDebug("<Primary Continued> ::= <Empty> | ( <IDs> )\n")
+	logDebug("\t<Primary Continued> ::= <Empty> | ( <IDs> )\n")
 	if currentRecord.lexeme == "(" {
 		nextRecord()
 		prodIDs()
@@ -539,7 +539,7 @@ func prodPrimaryContinued() {
 }
 
 func prodEmpty() {
-	logDebug("<Empty> ::= ε\n")
+	logDebug("\t<Empty> ::= ε\n")
 }
 
 /* ---- The main attraction --------------------------- */
