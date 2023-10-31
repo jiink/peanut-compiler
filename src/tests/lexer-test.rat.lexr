@@ -47,11 +47,10 @@ Identifier  : zZZZ
 Identifier  : Zzzz
 Identifier  : a1z4r
 Identifier  : abcde12345x
-Unrecognized: asd1
-Integer     : 23
-Identifier  : rty
-Integer     : 000
-Separator   : .
-Separator   : .
-Integer     : 123
+Unrecognized: $
+Unrecognized: _
+Unrecognized: asd12
+Unrecognized: 23rty
+Unrecognized: 000.
+Unrecognized: .123
 ----------------------
