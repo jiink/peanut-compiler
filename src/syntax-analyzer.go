@@ -16,8 +16,7 @@ var currentRecord record
 // Reports a syntax error. To be used when a syntax error is encountered.
 // Prof. said this can just exit after finding the first syntax error.
 func syntaxError(format string, args ...interface{}) {
-	lineNum := 0 // TODO - let the line number be accurate. Maybe one of the fields of `record` could be `lineNumber`
-	errorInfo := fmt.Sprintf("Line %d: Unexpected token \"%s\" | ", lineNum, currentRecord.lexeme)
+	errorInfo := fmt.Sprintf("Line %d: Unexpected token \"%s\" | ", currentRecord.lineNumber, currentRecord.lexeme)
 	errorMessagePrefix := fmt.Sprintf("[ERROR] %s ", errorInfo)
 	fmt.Printf(errorMessagePrefix+format+"\n", args...)
 	promptExit()

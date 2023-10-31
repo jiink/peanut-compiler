@@ -68,7 +68,7 @@ func readInSourceCode(path string) {
 	sourceCode = string(content)
 	logDebug("Source code: %s\n", sourceCode)
 	sourceCode = removeComments(sourceCode)
-	sourceCode = trimWhiteSpace(sourceCode)
+	sourceCode = trimCarriageReturns(sourceCode)
 	fmt.Printf("Opened file: %s\n", sourceCodePath)
 }
 

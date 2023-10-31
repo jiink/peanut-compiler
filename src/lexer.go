@@ -35,8 +35,9 @@ const (
 )
 
 type record struct {
-	tokenType tokenType
-	lexeme    string
+	tokenType  tokenType
+	lexeme     string
+	lineNumber int
 }
 
 var keywords = []string{
@@ -242,9 +243,10 @@ func logRecords(records []record) {
 	fmt.Printf("Wrote output to: %s\n", outputPath)
 }
 
-// Removes all whitespace from the given string.
-func trimWhiteSpace(s string) string {
-	return strings.Join(strings.Fields(s), " ")
+// Strips all CRs from CR+LF line endings on Windows.
+// Makes counting newlines easier.
+func trimCarriageReturns(s string) string {
+	return strings.ReplaceAll(s, "\r", "")
 }
 
 // Removes all Rat23F comments from the given string.
@@ -310,6 +312,7 @@ func lexer(sourceCode string) ([]record, error) {
 
 	records := []record{}
 	sourceCodePointer := 0
+	currentLineNumber := 1
 
 	// The transition tables are made by hand. After drawing a
 	// non-deterministic FSM diagram, it is converted
@@ -319,7 +322,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmIdentifier := FSM{
 		inputSymbolSet: []symbolType{Letter, Digit},
 		transitionTable: [][]int{
-		// l  d
+			// l  d
 			{0, 0}, // 0
 			{2, 0}, // 1
 			{3, 4}, // 2
@@ -333,7 +336,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmReal := FSM{
 		inputSymbolSet: []symbolType{Digit, Period, Letter},
 		transitionTable: [][]int{
-		// d, p, l
+			// d, p, l
 			{0, 0, 0}, // 0
 			{2, 0, 0}, // 1
 			{2, 3, 5}, // 2
@@ -348,7 +351,7 @@ func lexer(sourceCode string) ([]record, error) {
 	fsmInteger := FSM{
 		inputSymbolSet: []symbolType{Digit, Period, Letter},
 		transitionTable: [][]int{
-		// d, p, l
+			// d, p, l
 			{0, 0, 0}, // 0
 			{2, 0, 0}, // 1
 			{2, 3, 3}, // 2
@@ -362,7 +365,7 @@ func lexer(sourceCode string) ([]record, error) {
 		tokenType := Unrecognized
 		lexemeStartIndex := sourceCodePointer
 		currentChar := readCharSourceCode(&sourceCodePointer)
-		logDebug("new loop with '%c'\n", currentChar)
+		logDebug("new loop with %q\n", currentChar)
 
 		if isLetter(currentChar) {
 			// Identifiers start with a letter.
@@ -375,16 +378,16 @@ func lexer(sourceCode string) ([]record, error) {
 			sourceCodePointerBookmark := sourceCodePointer
 			if fsmReal.run(&sourceCodePointer) {
 				tokenType = Real
-				} else {
-					sourceCodePointer = sourceCodePointerBookmark
-					if fsmInteger.run(&sourceCodePointer) {
-						tokenType = Integer
-					}
+			} else {
+				sourceCodePointer = sourceCodePointerBookmark
+				if fsmInteger.run(&sourceCodePointer) {
+					tokenType = Integer
 				}
+			}
 		} else {
 			// Check for a 2-char operator. If not, back up and check for a 1-char operator, then separator.
 			nextChar := readCharSourceCode(&sourceCodePointer) // Peek at next character for 2-char operators (e.g. ==)
-			logDebug("next char: '%c'\n", nextChar)
+			logDebug("next char: %q\n", nextChar)
 			if isOperator(string(currentChar) + string(nextChar)) {
 				tokenType = Operator
 				_ = readCharSourceCode(&sourceCodePointer) // Backs up later
@@ -394,10 +397,13 @@ func lexer(sourceCode string) ([]record, error) {
 				tokenType = Separator
 			} else if isPeriod(currentChar) {
 				fsmInteger.run(&sourceCodePointer) // checks for tokens like ".123"
-					tokenType = Unrecognized
+				tokenType = Unrecognized
 			} else {
 				tokenType = Unrecognized
-				logDebug("Unhandled character '%c'\n", currentChar)
+				logDebug("Unhandled character %q\n", currentChar)
+				if currentChar == '\n' {
+					currentLineNumber++
+				}
 			}
 		}
 		backUp(&sourceCodePointer)
@@ -409,12 +415,12 @@ func lexer(sourceCode string) ([]record, error) {
 			if tokenType == Identifier && isKeyword(lexeme) {
 				tokenType = Keyword
 			}
-			records = append(records, record{tokenType: tokenType, lexeme: lexeme})
+			records = append(records, record{tokenType: tokenType, lexeme: lexeme, lineNumber: currentLineNumber})
 		} else {
-			lexeme := sourceCode[lexemeStartIndex : sourceCodePointer]
+			lexeme := sourceCode[lexemeStartIndex:sourceCodePointer]
 			if strings.TrimSpace(lexeme) != "" {
-				fmt.Printf("ERROR: Unrecognized token \"%s\".\n", lexeme)
-				records = append(records, record{tokenType: tokenType, lexeme: lexeme})
+				fmt.Printf("ERROR: Unrecognized token \"%q\".\n", lexeme)
+				records = append(records, record{tokenType: tokenType, lexeme: lexeme, lineNumber: currentLineNumber})
 			}
 		}
 	}
