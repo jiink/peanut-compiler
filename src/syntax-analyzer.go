@@ -20,7 +20,7 @@ func syntaxError(format string, args ...interface{}) {
 	errorInfo := fmt.Sprintf("Line %d: Unexpected token \"%s\" | ", lineNum, currentRecord.lexeme)
 	errorMessagePrefix := fmt.Sprintf("[ERROR] %s ", errorInfo)
 	fmt.Printf(errorMessagePrefix+format+"\n", args...)
-	exit()
+	promptExit()
 }
 
 // Returns the next record in each subsequent call.
