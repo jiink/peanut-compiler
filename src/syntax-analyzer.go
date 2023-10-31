@@ -29,8 +29,10 @@ func nextRecord() record {
 	if len(records) > 0 {
 		record = records[0]
 		records = records[1:]
+		fmt.Printf("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
+	} else {
+		fmt.Println("Reached end of file.")
 	}
-	fmt.Printf("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
 	currentRecord = record
 	return record
 }
