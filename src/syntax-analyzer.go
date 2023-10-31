@@ -29,9 +29,9 @@ func nextRecord() record {
 	if len(records) > 0 {
 		record = records[0]
 		records = records[1:]
-		logDebug("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
+		log("Token: %s\tLexeme: %s\n", record.tokenType.String(), record.lexeme)
 	} else {
-		logDebug("Reached end of file.\n\n")
+		log("Reached end of file.\n\n")
 	}
 	currentRecord = record
 	return record

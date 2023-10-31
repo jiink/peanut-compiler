@@ -52,17 +52,18 @@ func showUsage() {
 }
 
 func createLogFile() {
-	outputPath := inputFilePath
+	pathFirstChar := inputFilePath[0]
+	outputPath := inputFilePath[1:] // Excludes initial dot in relative path
 	// Remove everything after the dot (including the dot itself)
 	dotIndex := strings.Index(outputPath, ".")
 	if dotIndex != -1 {
-		result := outputPath[:dotIndex]
-		fmt.Println("Result:", result)
+		outputPath = outputPath[:dotIndex]
 	}
-	outputPath += "-out.txt"
+	outputPath = string(pathFirstChar) + outputPath + "-out.txt"
 	f, err := os.Create(outputPath)
 	check(err)
 	logFile = f
+	fmt.Printf("Created file: %s\n", outputPath)
 }
 
 // Prints a debug message to the console and/or a file
