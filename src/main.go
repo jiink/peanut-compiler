@@ -67,7 +67,6 @@ func readInSourceCode(path string) {
 	content, err := io.ReadAll(file)
 	check(err)
 	sourceCode = string(content)
-	logDebug("Source code: %s\n", sourceCode)
 	sourceCode = removeComments(sourceCode)
 	sourceCode = trimCarriageReturns(sourceCode)
 	fmt.Printf("Opened file: %s\n", sourceCodePath)
@@ -94,21 +93,23 @@ func main() {
 	fmt.Println("Welcome to the Peanut Compiler for Rat23F!")
 	readInSourceCode(inputFilePath)
 
-	fmt.Println("Beginning lexical analysis...")
+	enableDebugSoon := debugEnabled
+	debugEnabled = false // Silence debug messages just for the lexer
+	//fmt.Println("Beginning lexical analysis...")
 	var records, err = lexer(sourceCode)
 	if err != nil {
 		fmt.Println("The lexer encountered an error.")
 	} else {
-		logRecords(records)
+		logRecords(records, false)
 	}
-	fmt.Println("Lexical analysis complete.")
+	//fmt.Println("Lexical analysis complete.")
 
-	fmt.Println("Beginning syntax analysis...")
+	//fmt.Println("Beginning syntax analysis...")
+	debugEnabled = enableDebugSoon
 	err = syntaxAnalyzer(records)
 	if err != nil {
 		fmt.Println("The syntax analyzer encountered an error.")
 	}
 	fmt.Println("Syntax analysis complete.")
-
 	fmt.Println("This is the end of the compiler so far.")
 }

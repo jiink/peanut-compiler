@@ -227,10 +227,11 @@ func recordsToString(records []record) string {
 
 // Logs the given lexer records to the console and to an output file
 // whos path depends on the Rat23F input file.
-func logRecords(records []record) {
-	// Print to console
+func logRecords(records []record, printToConsole bool) {
 	recordsReport := recordsToString(records)
-	fmt.Println(recordsReport)
+	if printToConsole {
+		fmt.Println(recordsReport)
+	}
 
 	// Create output file
 	outputPath := inputFilePath + ".lexr"
@@ -238,7 +239,7 @@ func logRecords(records []record) {
 	check(err)
 	defer f.Close()
 	f.WriteString(recordsReport)
-	fmt.Printf("Wrote output to: %s\n", outputPath)
+	fmt.Printf("Created file: %s\n", outputPath)
 }
 
 // Strips all CRs from CR+LF line endings on Windows.
