@@ -10,14 +10,15 @@ import (
 //---- Definitions ----------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
 
-var debugLogArgument = "debugLog"
-var debugLogArgumentShort = "d"
+var noDebugLogArgument = "silent"
+var noDebugLogArgumentShort = "s"
 
 //---- Variables ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
 
 var inputFilePath = ""
 var sourceCode = ""
+var debugEnabled = true // Enables/disables debug log messages
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ func showUsage() {
 	fmt.Println("Compiles Rat23F source code in the given FILE.")
 	fmt.Println("Lexical analysis step produces output of \"FILE.lexer\".")
 	fmt.Println()
-	fmt.Printf("\t-%s, --%s\t\tDisplay debug messages such as lexer state machine statuses and syntax analysis production trees.\n", debugLogArgumentShort, debugLogArgument)
+	fmt.Printf("\t-%s, --%s\t\tSilence debug messages such as lexer state machine statuses and syntax analysis production trees.\n", noDebugLogArgumentShort, noDebugLogArgument)
 }
 
 // Prints a debug message to the console if debugEnabled is true.
@@ -86,8 +87,8 @@ func main() {
 	}
 
 	if len(os.Args) > 2 {
-		if os.Args[2] == "-"+debugLogArgumentShort || os.Args[2] == "--"+debugLogArgument {
-			debugEnabled = true
+		if os.Args[2] == "-"+noDebugLogArgumentShort || os.Args[2] == "--"+noDebugLogArgument {
+			debugEnabled = false
 		}
 	}
 	fmt.Println("Welcome to the Peanut Compiler for Rat23F!")

@@ -11,8 +11,6 @@ import (
 //---- Definitions ----------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
 
-var debugEnabled = false // Enables/disables debug log messages
-
 type tokenType int
 
 const (
