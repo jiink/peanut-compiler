@@ -1,9 +1,0 @@
-----------------------
-[Token]     : [Lexeme]
-Operator    : =
-Operator    : !=
-Operator    : >
-Operator    : <
-Operator    : <=
-Operator    : =>
-----------------------
