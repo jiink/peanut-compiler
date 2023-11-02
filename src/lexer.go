@@ -190,7 +190,7 @@ func charToSymbolType(r rune) symbolType {
 // and increments the index for the subsequent calls.
 func readCharSourceCode(index *int) rune {
 	char := ' '
-	if *index < len(sourceCode) {
+	if *index < len([]rune(sourceCode)) {
 		char = []rune(sourceCode)[*index]
 	}
 	*index = *index + 1
@@ -420,7 +420,7 @@ func lexer(sourceCode string) ([]record, error) {
 		} else {
 			lexeme := sourceCode[lexemeStartIndex:sourceCodePointer]
 			if strings.TrimSpace(lexeme) != "" {
-				fmt.Printf("ERROR: Unrecognized token \"%q\".\n", lexeme)
+				fmt.Printf("[ERROR] Unrecognized token \"%q\".\n", lexeme)
 				records = append(records, record{tokenType: tokenType, lexeme: lexeme, lineNumber: currentLineNumber})
 			}
 		}
