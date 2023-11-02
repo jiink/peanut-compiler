@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
+	"unicode"
 )
 
 //---- Definitions ----------------------------------------------------------------------
@@ -84,6 +86,36 @@ func log(format string, args ...interface{}) {
 	}
 }
 
+// Removes all Rat23F comments from the given string.
+func removeComments(s string) string {
+
+	re := regexp.MustCompile(`(?s)\[\*.*?\*\]`)
+
+	return re.ReplaceAllString(s, "")
+}
+
+// Strips all CRs from CR+LF line endings on Windows.
+// Makes counting newlines easier.
+func trimCarriageReturns(s string) string {
+	return strings.ReplaceAll(s, "\r", "")
+}
+
+// Rat23F supports ASCII characters only, so remove
+// non ascii characters
+func asciiFilter(s string) string {
+	newS := strings.Map(func(r rune) rune {
+		if r > unicode.MaxASCII {
+			return -1
+		}
+		return r
+	}, s)
+	// Detect if any non-ascii characters were present
+	if len(s) != len(newS) {
+		log("[WARNING] Non-ASCII characters detected! Parsing may fail. If this was unexpected, try resaving your source code in UTF-8 format!")
+	}
+	return newS
+}
+
 // Reads in the Rat23F source code from the given path and
 // stores it in the global variable `sourceCode`.
 func readInSourceCode(path string) {
@@ -98,6 +130,10 @@ func readInSourceCode(path string) {
 	sourceCode = string(content)
 	sourceCode = removeComments(sourceCode)
 	sourceCode = trimCarriageReturns(sourceCode)
+	if len(sourceCode) != len([]rune(sourceCode)) {
+		log("[WARNING] Strange characters suspected! If this was unexpected, try resaving your source code in UTF-8 format!\n")
+	}
+	sourceCode = asciiFilter(sourceCode)
 	fmt.Printf("Opened file: %s\n", sourceCodePath)
 }
 

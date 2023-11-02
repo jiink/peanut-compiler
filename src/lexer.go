@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"slices"
 	"strings"
 )
@@ -244,20 +243,6 @@ func logRecords(records []record, printToConsole bool, printToFile bool) {
 	}
 }
 
-// Strips all CRs from CR+LF line endings on Windows.
-// Makes counting newlines easier.
-func trimCarriageReturns(s string) string {
-	return strings.ReplaceAll(s, "\r", "")
-}
-
-// Removes all Rat23F comments from the given string.
-func removeComments(s string) string {
-
-	re := regexp.MustCompile(`(?s)\[\*.*?\*\]`)
-
-	return re.ReplaceAllString(s, "")
-}
-
 /* ---- The main attractions -------------------------- */
 
 // Returns false when the FSM must end, and true when it's ready
@@ -420,7 +405,7 @@ func lexer(sourceCode string) ([]record, error) {
 		} else {
 			lexeme := sourceCode[lexemeStartIndex:sourceCodePointer]
 			if strings.TrimSpace(lexeme) != "" {
-				fmt.Printf("[ERROR] Unrecognized token \"%q\".\n", lexeme)
+				fmt.Printf("[ERROR] Unrecognized token %q.\n", lexeme)
 				records = append(records, record{tokenType: tokenType, lexeme: lexeme, lineNumber: currentLineNumber})
 			}
 		}
