@@ -184,6 +184,10 @@ func main() {
 	} else {
 		log("The code is syntactically correct!\n")
 	}
+	// Show the intruction table and symbol table
+	printInstructionTable()
+	printSymbolTable()
+
 	fmt.Println("This is the end of the compiler so far.")
 	if logFile != nil {
 		logFile.Close()

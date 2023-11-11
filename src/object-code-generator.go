@@ -46,6 +46,7 @@ type instruction struct {
 	operand   int
 }
 
+const instructionStartAddress = 1
 const symbolTableStartAddress = 7000
 
 //---- Variables ------------------------------------------------------------------------
@@ -53,12 +54,68 @@ const symbolTableStartAddress = 7000
 
 var symbolTable []symbolTableEntry
 var instructionTable []instruction
-var currentInstructionAddress = 1
+var currentInstructionAddress = instructionStartAddress
 var currentSymbolTableAddress = symbolTableStartAddress
-var jumpStack = make(stack, 0)
+var jumpStack stack
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
+
+// Returns a string representation of the given operationType.
+func (e operationType) String() string {
+	switch e {
+	case PUSHI:
+		return "PUSHI"
+	case PUSHM:
+		return "PUSHM"
+	case POPM:
+		return "POPM"
+	case STDOUT:
+		return "STDOUT"
+	case STDIN:
+		return "STDIN"
+	case ADD:
+		return "ADD"
+	case SUB:
+		return "SUB"
+	case MUL:
+		return "MUL"
+	case DIV:
+		return "DIV"
+	case GRT:
+		return "GRT"
+	case LES:
+		return "LES"
+	case EQU:
+		return "EQU"
+	case NEQ:
+		return "NEQ"
+	case GEQ:
+		return "GEQ"
+	case LEQ:
+		return "LEQ"
+	case JUMPZ:
+		return "JUMPZ"
+	case JUMP:
+		return "JUMP"
+	case LABEL:
+		return "LABEL"
+	default:
+		return fmt.Sprintf("%d", int(e))
+	}
+}
+
+// Returns a string representation of the given identifierType.
+func (e identifierType) String() string {
+	switch e {
+	case TypeInteger:
+		return "integer"
+	case TypeBool:
+		return "bool"
+	default:
+		return fmt.Sprintf("%d", int(e))
+	}
+}
 
 func addSymbol(identifier string, symbolType identifierType) {
 	// First see if symbol is already in table
@@ -83,7 +140,7 @@ func getSymbol(identifier string) (symbolTableEntry, bool) {
 func printSymbolTable() {
 	fmt.Println("Symbol Table:")
 	for _, symbol := range symbolTable {
-		fmt.Printf("%s\t%d\t%d\n", symbol.identifier, symbol.memoryLocation, symbol.symbolType)
+		fmt.Printf("%s\t%d\t%s\n", symbol.identifier, symbol.memoryLocation, symbol.symbolType.String())
 	}
 }
 
@@ -99,12 +156,12 @@ func generateInstruction(op operationType, operand int) {
 
 func printInstructionTable() {
 	fmt.Println("Instruction Table:")
-	for _, instruction := range instructionTable {
-		fmt.Printf("%d\t%d\t%d\n", instruction.operation, instruction.operand, currentInstructionAddress)
+	for i, instruction := range instructionTable {
+		fmt.Printf("%d\t%s\t%d\n", i+instructionStartAddress, instruction.operation.String(), instruction.operand)
 	}
 }
 
 func backPatch(jumpAddress int) {
-	jumpStack, addr := jumpStack.Pop()
+	addr := jumpStack.Pop()
 	instructionTable[addr].operand = jumpAddress
 }

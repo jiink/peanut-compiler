@@ -291,6 +291,7 @@ func prodIf() {
 			if currentRecord.lexeme == ")" {
 				nextRecord()
 				prodStatement()
+				backPatch(currentInstructionAddress)
 				prodIfContinued()
 			} else {
 				syntaxError("')' Expected")
@@ -430,6 +431,24 @@ func prodRelop() {
 	logDebug("\t<Relop> ::= == | != | > | < | <= | =>\n")
 	switch currentRecord.lexeme {
 	case "==", "!=", ">", "<", "<=", "=>":
+		switch currentRecord.lexeme {
+		case "<":
+			generateInstruction(LES, 0)
+		case ">":
+			generateInstruction(GRT, 0)
+		case "==":
+			generateInstruction(EQU, 0)
+		case "!=":
+			generateInstruction(NEQ, 0)
+		case "<=":
+			generateInstruction(LEQ, 0)
+		case "=>":
+			generateInstruction(GEQ, 0)
+		default:
+			syntaxError("Invalid relop")
+		}
+		jumpStack.Push(currentInstructionAddress)
+		generateInstruction(JUMPZ, 0)
 		nextRecord()
 	default:
 		syntaxError("'==', '!=', '>', '<', '<=', or '=>' expected")
