@@ -1,0 +1,13 @@
+[* this is comment for this sample code for assignment 3 *]
+#
+integer i, max, sum; [* declarations *]
+
+sum = 0;
+i = 1;
+get (max);
+while (i < max) {
+    sum = sum + i;
+    i = i + 1;
+}
+put (sum + max);
+#
