@@ -7,6 +7,7 @@ import "fmt"
 
 var records []record
 var currentRecord record
+var addrHold int // Temporarily stores the current instruction address during parsing
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -396,6 +397,8 @@ func prodScan() {
 func prodWhile() {
 	logDebug("\t<While> ::= while ( <Condition> ) <Statement>\n")
 	if currentRecord.lexeme == "while" {
+		addrHold = currentInstructionAddress
+		generateInstruction(LABEL, 0)
 		nextRecord()
 		if currentRecord.lexeme == "(" {
 			nextRecord()
@@ -403,6 +406,8 @@ func prodWhile() {
 			if currentRecord.lexeme == ")" {
 				nextRecord()
 				prodStatement()
+				generateInstruction(JUMP, addrHold)
+				backPatch(currentInstructionAddress)
 			} else {
 				syntaxError("')' expected")
 			}
