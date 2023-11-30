@@ -11,6 +11,7 @@ type operationType int
 
 const (
 	TypeInteger identifierType = iota
+	TypeReal
 	TypeBool
 )
 
@@ -123,8 +124,9 @@ func addSymbol(identifier string, symbolType identifierType) {
 		fmt.Printf("[ERROR] Symbol %s already in symbol table\n", identifier)
 		return
 	}
-	symbolTable = append(symbolTable, symbolTableEntry{identifier, len(symbolTable), symbolType})
+	symbolTable = append(symbolTable, symbolTableEntry{identifier, currentSymbolTableAddress, symbolType})
 	currentSymbolTableAddress++
+	printSymbolTable()
 }
 
 func getSymbol(identifier string) (symbolTableEntry, bool) {
@@ -133,7 +135,6 @@ func getSymbol(identifier string) (symbolTableEntry, bool) {
 			return symbol, true
 		}
 	}
-	fmt.Printf("[ERROR] Symbol %s used before declaration\n", identifier)
 	return symbolTableEntry{}, false
 }
 

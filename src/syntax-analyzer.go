@@ -7,7 +7,9 @@ import "fmt"
 
 var records []record
 var currentRecord record
-var addrHold int // Temporarily stores the current instruction address during parsing
+var addrHold int             // Temporarily stores the current instruction address during parsing
+var isOnDeclarationLine bool // Is the parser curently on a line where declarations are happening? Used for putting symbols in the symbol table.
+var declarationLineType identifierType
 
 //---- Functions ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +139,15 @@ func prodParameter() {
 func prodQualifier() {
 	logDebug("\t<Qualifier> ::= integer | bool | real\n")
 	if currentRecord.lexeme == "integer" || currentRecord.lexeme == "bool" || currentRecord.lexeme == "real" {
+		isOnDeclarationLine = true
+		switch currentRecord.lexeme {
+		case "integer":
+			declarationLineType = TypeInteger
+		case "bool":
+			declarationLineType = TypeBool
+		case "real":
+			declarationLineType = TypeReal
+		}
 		nextRecord()
 	} else {
 		syntaxError("'bool', 'real', or 'integer' expected")
@@ -169,6 +180,7 @@ func prodDeclarationList() {
 	logDebug("\t<Declaration List> ::= <Declaration> ; <Declaration List Continued>\n")
 	prodDeclaration()
 	if currentRecord.lexeme == ";" {
+		isOnDeclarationLine = false
 		nextRecord()
 		prodDeclarationListContinued()
 	} else {
@@ -192,6 +204,10 @@ func prodDeclaration() {
 func prodIDs() {
 	logDebug("\t<IDs> ::= <Identifier> <IDs Continued>\n")
 	if currentRecord.tokenType == Identifier {
+		if isOnDeclarationLine {
+			logDebug(">>>>>>> LALALAL\n")
+			addSymbol(currentRecord.lexeme, declarationLineType)
+		}
 		nextRecord()
 		prodIDsContinued()
 	} else {
@@ -264,10 +280,17 @@ func prodCompound() {
 func prodAssign() {
 	logDebug("\t<Assign> ::= <Identifier> = <Expression> ;\n")
 	if currentRecord.tokenType == Identifier {
+		saveRecord := currentRecord
 		nextRecord()
 		if currentRecord.lexeme == "=" {
 			nextRecord()
 			prodExpression()
+			entry, wasFound := getSymbol(saveRecord.lexeme)
+			if wasFound {
+				generateInstruction(POPM, entry.memoryLocation)
+			} else {
+				fmt.Printf("[ERROR] Symbol %s used before declaration\n", saveRecord.lexeme)
+			}
 			if currentRecord.lexeme == ";" {
 				nextRecord()
 			} else {
@@ -473,6 +496,7 @@ func prodExpressionContinued() {
 	logDebug("\t<Expression Continued> ::= + <Term> | - <Term>\n")
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
 		nextRecord()
+		generateInstruction(ADD, 0)
 		prodTerm()
 	} else {
 		syntaxError("'+' or '-' expected")
@@ -497,6 +521,7 @@ func prodTermContinued() {
 	logDebug("\t<Term Continued> ::= * <Factor> | / <Factor>\n")
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
 		nextRecord()
+		generateInstruction(MUL, 0)
 		prodFactor()
 	} else {
 		syntaxError("'*' or '/' expected")
@@ -516,6 +541,12 @@ func prodFactor() {
 func prodPrimary() {
 	logDebug("\t<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false\n")
 	if currentRecord.tokenType == Identifier {
+		entry, wasFound := getSymbol(currentRecord.lexeme)
+		if wasFound {
+			generateInstruction(PUSHM, entry.memoryLocation)
+		} else {
+			fmt.Printf("[ERROR] Symbol %s used before declaration\n", currentRecord.lexeme)
+		}
 		nextRecord()
 		prodPrimaryContinued()
 		return
