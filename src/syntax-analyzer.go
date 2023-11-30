@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 //---- Variables ------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -552,6 +555,8 @@ func prodPrimary() {
 		return
 	}
 	if currentRecord.tokenType == Integer {
+		num, _ := strconv.Atoi(currentRecord.lexeme)
+		generateInstruction(PUSHI, num)
 		nextRecord()
 		return
 	}
