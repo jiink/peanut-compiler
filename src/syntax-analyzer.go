@@ -499,8 +499,8 @@ func prodExpressionContinued() {
 	logDebug("\t<Expression Continued> ::= + <Term> | - <Term>\n")
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
 		nextRecord()
-		generateInstruction(ADD, 0)
 		prodTerm()
+		generateInstruction(ADD, 0)
 	} else {
 		syntaxError("'+' or '-' expected")
 	}
@@ -524,8 +524,8 @@ func prodTermContinued() {
 	logDebug("\t<Term Continued> ::= * <Factor> | / <Factor>\n")
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
 		nextRecord()
-		generateInstruction(MUL, 0)
 		prodFactor()
+		generateInstruction(MUL, 0)
 	} else {
 		syntaxError("'*' or '/' expected")
 	}

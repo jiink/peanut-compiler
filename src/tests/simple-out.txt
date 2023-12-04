@@ -1,0 +1,64 @@
+Token: Separator	Lexeme: #
+	<Rat23F> ::= <Opt Function Definitions> # <Opt Declaration List> <Statement List> #
+	<Opt Function Definitions> ::= <Function Definitions> | <Empty>
+Token: Keyword	Lexeme: integer
+	<Opt Declaration List> ::= <Declaration List> | <Empty>
+	<Declaration List> ::= <Declaration> ; <Declaration List Continued>
+	<Declaration> ::= <Qualifier> <IDs>
+	<Qualifier> ::= integer | bool | real
+Token: Identifier	Lexeme: a
+	<IDs> ::= <Identifier> <IDs Continued>
+>>>>>>> LALALAL
+Token: Separator	Lexeme: ,
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Identifier	Lexeme: b
+	<IDs> ::= <Identifier> <IDs Continued>
+>>>>>>> LALALAL
+Token: Separator	Lexeme: ,
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Identifier	Lexeme: c
+	<IDs> ::= <Identifier> <IDs Continued>
+>>>>>>> LALALAL
+Token: Separator	Lexeme: ,
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Identifier	Lexeme: x
+	<IDs> ::= <Identifier> <IDs Continued>
+>>>>>>> LALALAL
+Token: Separator	Lexeme: ;
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Identifier	Lexeme: x
+	<Declaration List Continued> ::= <Empty> | <Declaration List>
+	<Statement List> ::= <Statement> <Statement List Continued>
+	<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+	<Assign> ::= <Identifier> = <Expression> ;
+Token: Operator	Lexeme: =
+Token: Identifier	Lexeme: a
+	<Expression> ::= <Term> <Expression Prime>
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+Token: Operator	Lexeme: +
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+	<Expression Continued> ::= + <Term> | - <Term>
+Token: Identifier	Lexeme: b
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+Token: Operator	Lexeme: *
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Term Continued> ::= * <Factor> | / <Factor>
+Token: Identifier	Lexeme: c
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+Token: Separator	Lexeme: ;
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+Token: Separator	Lexeme: #
+	<Statement List Continued> ::= <Empty> | <Statement List>
+Reached end of file.
+
+The code is syntactically correct!
