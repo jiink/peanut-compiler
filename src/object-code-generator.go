@@ -152,6 +152,7 @@ func isIdentifierInSymbolTable(identifier string) bool {
 
 func generateInstruction(op operationType, operand int) {
 	instructionTable = append(instructionTable, instruction{op, operand})
+	logDebug("\t op ::= %s, operand ::= %d, intr_address ::= %d\n", op.String(), operand, currentInstructionAddress)
 	currentInstructionAddress++
 }
 
