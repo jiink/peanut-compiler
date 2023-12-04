@@ -1,0 +1,4 @@
+#
+integer i;
+while( i < max ) i = i + 1;
+#
