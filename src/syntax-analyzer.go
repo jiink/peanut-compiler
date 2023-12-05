@@ -381,6 +381,7 @@ func prodPrint() {
 			if currentRecord.lexeme == ")" {
 				nextRecord()
 				if currentRecord.lexeme == ";" {
+					generateInstruction(STDOUT, 0)
 					nextRecord()
 				} else {
 					syntaxError("';' expected")
@@ -399,9 +400,16 @@ func prodPrint() {
 func prodScan() {
 	logDebug("\t<Scan> ::= get ( <IDs> );\n")
 	if currentRecord.lexeme == "get" {
+		generateInstruction(STDIN, 0)
 		nextRecord()
 		if currentRecord.lexeme == "(" {
 			nextRecord()
+			entry, wasFound := getSymbol(currentRecord.lexeme)
+			if wasFound {
+				generateInstruction(POPM, entry.memoryLocation)
+			} else {
+				fmt.Printf("[ERROR] Symbol %s used before declaration\n", currentRecord.lexeme)
+			}
 			prodIDs()
 			if currentRecord.lexeme == ")" {
 				nextRecord()
