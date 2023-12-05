@@ -459,8 +459,8 @@ func prodCondition() {
 	prodExpression()
 	prodRelop()
 	prodExpression()
-	generateInstruction(comparisonInstrHold, 0)
 	jumpStack.Push(currentInstructionAddress)
+	generateInstruction(comparisonInstrHold, 0)
 	generateInstruction(JUMPZ, 0)
 }
 
