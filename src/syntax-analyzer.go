@@ -209,7 +209,6 @@ func prodIDs() {
 	logDebug("\t<IDs> ::= <Identifier> <IDs Continued>\n")
 	if currentRecord.tokenType == Identifier {
 		if isOnDeclarationLine {
-			logDebug(">>>>>>> LALALAL\n")
 			addSymbol(currentRecord.lexeme, declarationLineType)
 		}
 		nextRecord()
