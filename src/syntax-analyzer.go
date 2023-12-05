@@ -10,7 +10,8 @@ import (
 
 var records []record
 var currentRecord record
-var addrHold int             // Temporarily stores the current instruction address during parsing
+var addrHold int // Temporarily stores the current instruction address during parsing
+var comparisonInstrHold operationType
 var isOnDeclarationLine bool // Is the parser curently on a line where declarations are happening? Used for putting symbols in the symbol table.
 var declarationLineType identifierType
 
@@ -459,6 +460,9 @@ func prodCondition() {
 	prodExpression()
 	prodRelop()
 	prodExpression()
+	generateInstruction(comparisonInstrHold, 0)
+	jumpStack.Push(currentInstructionAddress)
+	generateInstruction(JUMPZ, 0)
 }
 
 func prodRelop() {
@@ -467,22 +471,20 @@ func prodRelop() {
 	case "==", "!=", ">", "<", "<=", "=>":
 		switch currentRecord.lexeme {
 		case "<":
-			generateInstruction(LES, 0)
+			comparisonInstrHold = LES
 		case ">":
-			generateInstruction(GRT, 0)
+			comparisonInstrHold = GRT
 		case "==":
-			generateInstruction(EQU, 0)
+			comparisonInstrHold = EQU
 		case "!=":
-			generateInstruction(NEQ, 0)
+			comparisonInstrHold = NEQ
 		case "<=":
-			generateInstruction(LEQ, 0)
+			comparisonInstrHold = LEQ
 		case "=>":
-			generateInstruction(GEQ, 0)
+			comparisonInstrHold = GEQ
 		default:
 			syntaxError("Invalid relop")
 		}
-		jumpStack.Push(currentInstructionAddress)
-		generateInstruction(JUMPZ, 0)
 		nextRecord()
 	default:
 		syntaxError("'==', '!=', '>', '<', '<=', or '=>' expected")
@@ -506,9 +508,16 @@ func prodExpressionPrime() {
 func prodExpressionContinued() {
 	logDebug("\t<Expression Continued> ::= + <Term> | - <Term>\n")
 	if currentRecord.lexeme == "+" || currentRecord.lexeme == "-" {
+		opHold := currentRecord.lexeme
 		nextRecord()
 		prodTerm()
-		generateInstruction(ADD, 0)
+		switch opHold {
+		case "+":
+			generateInstruction(ADD, 0)
+		case "-":
+			generateInstruction(SUB, 0)
+		}
+
 	} else {
 		syntaxError("'+' or '-' expected")
 	}
@@ -531,9 +540,16 @@ func prodTermPrime() {
 func prodTermContinued() {
 	logDebug("\t<Term Continued> ::= * <Factor> | / <Factor>\n")
 	if currentRecord.lexeme == "*" || currentRecord.lexeme == "/" {
+		opHold := currentRecord.lexeme
 		nextRecord()
 		prodFactor()
-		generateInstruction(MUL, 0)
+		switch opHold {
+		case "*":
+			generateInstruction(MUL, 0)
+		case "/":
+			generateInstruction(DIV, 0)
+		}
+
 	} else {
 		syntaxError("'*' or '/' expected")
 	}
