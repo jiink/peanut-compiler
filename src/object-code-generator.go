@@ -1,7 +1,10 @@
 // TODO: Check for type match when rat23f identifier is being used.
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 //---- Definitions ----------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -35,6 +38,9 @@ const (
 	JUMP
 	LABEL
 )
+
+// So "0" doesn't appear in the instruction table for instructions that don't take args.
+var instructionsWithOperands = []operationType{PUSHI, PUSHM, POPM, JUMPZ, JUMP}
 
 type symbolTableEntry struct {
 	identifier     string
@@ -159,7 +165,12 @@ func generateInstruction(op operationType, operand int) {
 func printInstructionTable() {
 	fmt.Println("Instruction Table:")
 	for i, instruction := range instructionTable {
-		fmt.Printf("%d\t%s\t%d\n", i+instructionStartAddress, instruction.operation.String(), instruction.operand)
+		fmt.Printf("%d\t%s", i+instructionStartAddress, instruction.operation.String())
+		if slices.Contains(instructionsWithOperands, instruction.operation) {
+			fmt.Printf("\t%d", instruction.operand)
+		}
+		fmt.Printf("\n")
+
 	}
 }
 
