@@ -1,0 +1,7 @@
+integer number;
+get(number);
+if (number > 0) {
+    put("positive");
+} else {
+    put("negative");
+}
