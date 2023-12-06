@@ -1,0 +1,28 @@
+integer number1, number2, result1;
+
+number1 = 10;
+number2 = 5;
+
+result1 = number1 * number2;
+
+put("answer is ", result1);
+
+if (result1 % 2 == 0) {
+    put("the answer is even");
+} else {
+    put("the answer is odd");
+}
+
+integer number3, number4, result2;
+
+number3 = 5;
+number4 = 5;
+result2 = number3 * number4;
+
+put("the answer is ", result2);
+
+if (result2 % 2 == 0) {
+    put("the answer is even");
+} else {
+    put("the answer is odd");
+}
