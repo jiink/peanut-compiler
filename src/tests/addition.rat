@@ -1,0 +1,5 @@
+integer a, b, result;
+a = 5;
+b = 5;
+result = a + b;
+put(result);
