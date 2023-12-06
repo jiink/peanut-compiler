@@ -1,0 +1,78 @@
+Token: Separator	Lexeme: #
+	<Rat23F> ::= <Opt Function Definitions> # <Opt Declaration List> <Statement List> #
+	<Opt Function Definitions> ::= <Function Definitions> | <Empty>
+Token: Keyword	Lexeme: integer
+	<Opt Declaration List> ::= <Declaration List> | <Empty>
+	<Declaration List> ::= <Declaration> ; <Declaration List Continued>
+	<Declaration> ::= <Qualifier> <IDs>
+	<Qualifier> ::= integer | bool | real
+Token: Identifier	Lexeme: i
+	<IDs> ::= <Identifier> <IDs Continued>
+Token: Separator	Lexeme: ,
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Identifier	Lexeme: max
+	<IDs> ::= <Identifier> <IDs Continued>
+Token: Separator	Lexeme: ;
+	<IDs Continued> ::= <Empty> | , <IDs>
+Token: Keyword	Lexeme: while
+	<Declaration List Continued> ::= <Empty> | <Declaration List>
+	<Statement List> ::= <Statement> <Statement List Continued>
+	<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+	<While> ::= while ( <Condition> ) <Statement>
+	 op ::= LABEL, operand ::= 0, intr_address ::= 1
+Token: Separator	Lexeme: (
+Token: Identifier	Lexeme: i
+	<Condition> ::= <Expression> <Relop> <Expression>
+	<Expression> ::= <Term> <Expression Prime>
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+	 op ::= PUSHM, operand ::= 7000, intr_address ::= 2
+Token: Operator	Lexeme: <
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+	<Relop> ::= == | != | > | < | <= | =>
+Token: Identifier	Lexeme: max
+	<Expression> ::= <Term> <Expression Prime>
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+	 op ::= PUSHM, operand ::= 7001, intr_address ::= 3
+Token: Separator	Lexeme: )
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+	 op ::= LES, operand ::= 0, intr_address ::= 4
+	 op ::= JUMPZ, operand ::= 0, intr_address ::= 5
+Token: Identifier	Lexeme: i
+	<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+	<Assign> ::= <Identifier> = <Expression> ;
+Token: Operator	Lexeme: =
+Token: Identifier	Lexeme: i
+	<Expression> ::= <Term> <Expression Prime>
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+	 op ::= PUSHM, operand ::= 7000, intr_address ::= 6
+Token: Operator	Lexeme: +
+	<Primary Continued> ::= <Empty> | ( <IDs> )
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+	<Expression Continued> ::= + <Term> | - <Term>
+Token: Integer	Lexeme: 1
+	<Term> ::= <Factor> <Term Prime>
+	<Factor> ::= - <Primary> | <Primary>
+	<Primary> ::= <Identifier> <Primary Continued> | <Integer> | ( <Expression> ) | <Real> | true | false
+	 op ::= PUSHI, operand ::= 1, intr_address ::= 7
+Token: Separator	Lexeme: ;
+	<Term Prime> ::= <Term Continued> <Term Prime> | <Empty>
+	 op ::= ADD, operand ::= 0, intr_address ::= 8
+	<Expression Prime> ::= <Expression Continued> <Expression Prime> | <Empty>
+	 op ::= POPM, operand ::= 7000, intr_address ::= 9
+Token: Separator	Lexeme: #
+	 op ::= JUMP, operand ::= 1, intr_address ::= 10
+	<Statement List Continued> ::= <Empty> | <Statement List>
+Reached end of file.
+
+The code is syntactically correct!

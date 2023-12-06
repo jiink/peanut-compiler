@@ -1,4 +1,4 @@
 #
-integer i;
+integer i, max;
 while( i < max ) i = i + 1;
 #

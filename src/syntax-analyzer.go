@@ -29,6 +29,11 @@ func syntaxError(format string, args ...interface{}) {
 	promptExit()
 }
 
+func symbolUsageError(lexeme string) {
+	fmt.Printf("\n[ERROR] Symbol `%s` used before declaration\n", lexeme)
+	promptExit()
+}
+
 // Returns the next record in each subsequent call.
 // Also updates global variable `currentRecord.lexeme` with the lexeme of the new record.
 func nextRecord() record {
@@ -292,7 +297,7 @@ func prodAssign() {
 			if wasFound {
 				generateInstruction(POPM, entry.memoryLocation)
 			} else {
-				fmt.Printf("[ERROR] Symbol %s used before declaration\n", saveRecord.lexeme)
+				symbolUsageError(saveRecord.lexeme)
 			}
 			if currentRecord.lexeme == ";" {
 				nextRecord()
@@ -408,7 +413,7 @@ func prodScan() {
 			if wasFound {
 				generateInstruction(POPM, entry.memoryLocation)
 			} else {
-				fmt.Printf("[ERROR] Symbol %s used before declaration\n", currentRecord.lexeme)
+				symbolUsageError(currentRecord.lexeme)
 			}
 			prodIDs()
 			if currentRecord.lexeme == ")" {
@@ -571,7 +576,7 @@ func prodPrimary() {
 		if wasFound {
 			generateInstruction(PUSHM, entry.memoryLocation)
 		} else {
-			fmt.Printf("[ERROR] Symbol %s used before declaration\n", currentRecord.lexeme)
+			symbolUsageError(currentRecord.lexeme)
 		}
 		nextRecord()
 		prodPrimaryContinued()
