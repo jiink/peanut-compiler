@@ -1,4 +1,0 @@
-#
-integer a, b, c, x;
-x = a + b*c;
-#
