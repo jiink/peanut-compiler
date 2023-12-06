@@ -338,6 +338,7 @@ func prodIf() {
 func prodIfContinued() {
 	logDebug("\t<If Continued> ::= endif | else <Statement> endif\n")
 	if currentRecord.lexeme == "endif" {
+		generateInstruction(LABEL, 0)
 		nextRecord()
 	} else if currentRecord.lexeme == "else" {
 		nextRecord()
