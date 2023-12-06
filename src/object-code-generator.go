@@ -132,7 +132,6 @@ func addSymbol(identifier string, symbolType identifierType) {
 	}
 	symbolTable = append(symbolTable, symbolTableEntry{identifier, currentSymbolTableAddress, symbolType})
 	currentSymbolTableAddress++
-	printSymbolTable()
 }
 
 func getSymbol(identifier string) (symbolTableEntry, bool) {

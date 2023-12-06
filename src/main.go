@@ -185,7 +185,9 @@ func main() {
 		log("The code is syntactically correct!\n")
 	}
 	// Show the intruction table and symbol table
+	fmt.Println()
 	printInstructionTable()
+	fmt.Println()
 	printSymbolTable()
 
 	fmt.Println("This is the end of the compiler so far.")
