@@ -1,0 +1,19 @@
+[* this is comment for this sample code which
+  converts Fahrenheit into Celcius. Modified for assignment 3 *]
+
+#
+  integer low, high, step, fahr, convert1x;
+
+    get(low);
+    get(high);
+    get(step);
+    while (low <= high)
+    {
+        put(low);
+        fahr = low;
+        convert1x = 5 * (fahr - 32) / 9;
+        put(convert1x);
+        low = low + step;
+    }
+    
+#
