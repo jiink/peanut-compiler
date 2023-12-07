@@ -144,9 +144,9 @@ func getSymbol(identifier string) (symbolTableEntry, bool) {
 }
 
 func printSymbolTable() {
-	fmt.Println("Symbol Table:")
+	log("Symbol Table:\n")
 	for _, symbol := range symbolTable {
-		fmt.Printf("%s\t%d\t%s\n", symbol.identifier, symbol.memoryLocation, symbol.symbolType.String())
+		log("%s\t%d\t%s\n", symbol.identifier, symbol.memoryLocation, symbol.symbolType.String())
 	}
 }
 
@@ -162,13 +162,13 @@ func generateInstruction(op operationType, operand int) {
 }
 
 func printInstructionTable() {
-	fmt.Println("Instruction Table:")
+	log("Instruction Table:\n")
 	for i, instruction := range instructionTable {
-		fmt.Printf("%d\t%s", i+instructionStartAddress, instruction.operation.String())
+		log("%d\t%s", i+instructionStartAddress, instruction.operation.String())
 		if slices.Contains(instructionsWithOperands, instruction.operation) {
-			fmt.Printf("\t%d", instruction.operand)
+			log("\t%d", instruction.operand)
 		}
-		fmt.Printf("\n")
+		log("\n")
 
 	}
 }
