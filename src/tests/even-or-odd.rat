@@ -1,28 +1,30 @@
-integer number1, number2, result1;
+[* Simplified even-or-odd program for assignment 3 *]
+[* Prints the inputted number only if it is even *]
+#
+integer foo, bar, result, isEven, newIsEven, counter;
 
-number1 = 10;
-number2 = 5;
-
-result1 = number1 * number2;
-
-put("answer is ", result1);
-
-if (result1 % 2 == 0) {
-    put("the answer is even");
-} else {
-    put("the answer is odd");
+get(foo);
+[* No usage of the '%' operator since the target machine does not have a corresponding instruction for it *]
+bar = foo / 2 * 2;
+if (foo == bar)
+{
+    put(foo);
 }
+endif
 
-integer number3, number4, result2;
-
-number3 = 5;
-number4 = 5;
-result2 = number3 * number4;
-
-put("the answer is ", result2);
-
-if (result2 % 2 == 0) {
-    put("the answer is even");
-} else {
-    put("the answer is odd");
+[* Try another technique of finding if a number is even without using '%' *]
+isEven = 1;
+counter = foo;
+while (counter > 0)
+{
+    if (isEven == 1) newIsEven = 0; endif
+    if (isEven == 0) newIsEven = 1; endif
+    isEven = newIsEven;
+    counter = counter - 1;
 }
+if (isEven == 1)
+{
+    put(foo);
+}
+endif
+#
